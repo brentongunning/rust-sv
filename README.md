@@ -17,7 +17,7 @@ Features
 
 # Installation
 
-Add ```sv = "0.1.0"``` to Cargo.toml
+Add ```sv = "0.1"``` to Cargo.toml
 
 # Requirements
 
