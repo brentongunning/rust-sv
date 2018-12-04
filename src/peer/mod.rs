@@ -21,7 +21,7 @@
 //!     ..Default::default()
 //! };
 //!
-//! let peer = Peer::connect(ip, port, Network::Mainnet, version, 0, 0);
+//! let peer = Peer::connect(ip, port, Network::Mainnet, version, |_| true);
 //! peer.connected_event().poll();
 //!
 //! let ping = Message::Ping(Ping { nonce: 0 });
@@ -50,7 +50,7 @@
 //!     ..Default::default()
 //! };
 //!
-//! let peer = Peer::connect(ip, port, Network::Mainnet, version, 0, 0);
+//! let peer = Peer::connect(ip, port, Network::Mainnet, version, |_| true);
 //!
 //! struct EventHandler {}
 //!

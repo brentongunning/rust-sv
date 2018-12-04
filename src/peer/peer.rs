@@ -80,8 +80,7 @@ impl Peer {
         port: u16,
         network: Network,
         version: Version,
-        min_start_height: i32,
-        required_services: u64,
+        connectable: fn(&Version) -> bool,
     ) -> Arc<Peer> {
         let peer = Arc::new(Peer {
             id: ProcessUniqueId::new(),
@@ -103,7 +102,7 @@ impl Peer {
 
         *peer.weak_self.lock().unwrap() = Some(Arc::downgrade(&peer));
 
-        Peer::connect_internal(&peer, version, min_start_height, required_services);
+        Peer::connect_internal(&peer, version, connectable);
 
         peer
     }
@@ -208,19 +207,13 @@ impl Peer {
         }
     }
 
-    fn connect_internal(
-        peer: &Arc<Peer>,
-        version: Version,
-        min_start_height: i32,
-        required_services: u64,
-    ) {
+    fn connect_internal(peer: &Arc<Peer>, version: Version, connectable: fn(&Version) -> bool) {
         info!("{:?} Connecting to {:?}:{}", peer, peer.ip, peer.port);
 
         let tpeer = peer.clone();
 
         thread::spawn(move || {
-            let mut tcp_reader = match tpeer.handshake(version, min_start_height, required_services)
-            {
+            let mut tcp_reader = match tpeer.handshake(version, connectable) {
                 Ok(tcp_stream) => tcp_stream,
                 Err(e) => {
                     error!("Failed to complete handshake: {:?}", e);
@@ -297,8 +290,7 @@ impl Peer {
     fn handshake(
         self: &Peer,
         version: Version,
-        min_start_height: i32,
-        required_services: u64,
+        connectable: fn(&Version) -> bool,
     ) -> Result<TcpStream> {
         // Connect over TCP
         let tcp_addr = SocketAddr::new(self.ip, self.port);
@@ -321,11 +313,8 @@ impl Peer {
             _ => return Err(Error::BadData("Unexpected command".to_string())),
         };
 
-        if their_version.start_height < min_start_height {
-            return Err(Error::IllegalState("Start height too old".to_string()));
-        }
-        if their_version.services & required_services != required_services {
-            return Err(Error::IllegalState("Required services missing".to_string()));
+        if !connectable(&their_version) {
+            return Err(Error::IllegalState("Peer is not connectable".to_string()));
         }
 
         let now = secs_since(UNIX_EPOCH) as i64;
