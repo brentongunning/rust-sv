@@ -1,4 +1,4 @@
-use messages::{Message, MessageHeader, Ping, Version};
+use messages::{Message, MessageHeader, Ping, Version, NODE_BITCOIN_CASH, NODE_NETWORK};
 use network::Network;
 use peer::atomic_reader::AtomicReader;
 use snowflake::ProcessUniqueId;
@@ -37,6 +37,32 @@ pub struct PeerDisconnected {
 pub struct PeerMessage {
     pub peer: Arc<Peer>,
     pub message: Message,
+}
+
+/// Filters peers based on their version information before connecting
+pub trait PeerFilter: Send + Sync {
+    fn connectable(&self, &Version) -> bool;
+}
+
+/// Filters out all peers except for Bitcoin SV full nodes
+#[derive(Clone, Default, Debug)]
+pub struct SVPeerFilter {
+    pub min_start_height: i32,
+}
+
+impl SVPeerFilter {
+    /// Creates a new SV filter that requires a minimum starting chain height
+    pub fn new(min_start_height: i32) -> Arc<SVPeerFilter> {
+        Arc::new(SVPeerFilter { min_start_height })
+    }
+}
+
+impl PeerFilter for SVPeerFilter {
+    fn connectable(&self, version: &Version) -> bool {
+        version.user_agent.contains("Bitcoin SV")
+            && version.start_height >= self.min_start_height
+            && version.services & (NODE_BITCOIN_CASH | NODE_NETWORK) != 0
+    }
 }
 
 /// Node on the network to send and receive messages
@@ -80,7 +106,7 @@ impl Peer {
         port: u16,
         network: Network,
         version: Version,
-        connectable: fn(&Version) -> bool,
+        filter: Arc<PeerFilter>,
     ) -> Arc<Peer> {
         let peer = Arc::new(Peer {
             id: ProcessUniqueId::new(),
@@ -102,7 +128,7 @@ impl Peer {
 
         *peer.weak_self.lock().unwrap() = Some(Arc::downgrade(&peer));
 
-        Peer::connect_internal(&peer, version, connectable);
+        Peer::connect_internal(&peer, version, filter);
 
         peer
     }
@@ -207,13 +233,13 @@ impl Peer {
         }
     }
 
-    fn connect_internal(peer: &Arc<Peer>, version: Version, connectable: fn(&Version) -> bool) {
+    fn connect_internal(peer: &Arc<Peer>, version: Version, filter: Arc<PeerFilter>) {
         info!("{:?} Connecting to {:?}:{}", peer, peer.ip, peer.port);
 
         let tpeer = peer.clone();
 
         thread::spawn(move || {
-            let mut tcp_reader = match tpeer.handshake(version, connectable) {
+            let mut tcp_reader = match tpeer.handshake(version, filter) {
                 Ok(tcp_stream) => tcp_stream,
                 Err(e) => {
                     error!("Failed to complete handshake: {:?}", e);
@@ -287,11 +313,7 @@ impl Peer {
         });
     }
 
-    fn handshake(
-        self: &Peer,
-        version: Version,
-        connectable: fn(&Version) -> bool,
-    ) -> Result<TcpStream> {
+    fn handshake(self: &Peer, version: Version, filter: Arc<PeerFilter>) -> Result<TcpStream> {
         // Connect over TCP
         let tcp_addr = SocketAddr::new(self.ip, self.port);
         let mut tcp_stream = TcpStream::connect_timeout(&tcp_addr, CONNECT_TIMEOUT)?;
@@ -313,8 +335,8 @@ impl Peer {
             _ => return Err(Error::BadData("Unexpected command".to_string())),
         };
 
-        if !connectable(&their_version) {
-            return Err(Error::IllegalState("Peer is not connectable".to_string()));
+        if !filter.connectable(&their_version) {
+            return Err(Error::IllegalState("Peer filtered out".to_string()));
         }
 
         let now = secs_since(UNIX_EPOCH) as i64;

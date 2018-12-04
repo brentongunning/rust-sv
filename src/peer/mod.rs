@@ -7,7 +7,7 @@
 //! ```no_run, rust
 //! use sv::messages::{Message, Ping, Version, NODE_BITCOIN_CASH, PROTOCOL_VERSION};
 //! use sv::network::Network;
-//! use sv::peer::Peer;
+//! use sv::peer::{Peer, SVPeerFilter};
 //! use sv::util::rx::Observable;
 //! use sv::util::secs_since;
 //! use std::time::UNIX_EPOCH;
@@ -21,7 +21,7 @@
 //!     ..Default::default()
 //! };
 //!
-//! let peer = Peer::connect(ip, port, Network::Mainnet, version, |_| true);
+//! let peer = Peer::connect(ip, port, Network::Mainnet, version, SVPeerFilter::new(0));
 //! peer.connected_event().poll();
 //!
 //! let ping = Message::Ping(Ping { nonce: 0 });
@@ -35,7 +35,7 @@
 //! ```no_run, rust
 //! use sv::messages::{Version, NODE_BITCOIN_CASH, PROTOCOL_VERSION};
 //! use sv::network::Network;
-//! use sv::peer::{Peer, PeerConnected, PeerDisconnected, PeerMessage};
+//! use sv::peer::{Peer, PeerConnected, PeerDisconnected, PeerMessage, SVPeerFilter};
 //! use sv::util::rx::{Observable, Observer};
 //! use sv::util::secs_since;
 //! use std::sync::Arc;
@@ -50,7 +50,7 @@
 //!     ..Default::default()
 //! };
 //!
-//! let peer = Peer::connect(ip, port, Network::Mainnet, version, |_| true);
+//! let peer = Peer::connect(ip, port, Network::Mainnet, version, SVPeerFilter::new(0));
 //!
 //! struct EventHandler {}
 //!
@@ -82,4 +82,6 @@
 pub(crate) mod atomic_reader;
 mod peer;
 
-pub use self::peer::{Peer, PeerConnected, PeerDisconnected, PeerMessage};
+pub use self::peer::{
+    Peer, PeerConnected, PeerDisconnected, PeerFilter, PeerMessage, SVPeerFilter,
+};
