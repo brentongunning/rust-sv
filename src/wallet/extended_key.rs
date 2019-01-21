@@ -419,9 +419,9 @@ pub fn derive_extended_key(master: &ExtendedKey, path: &str) -> Result<ExtendedK
 
         let index = if part.ends_with("'") || part.ends_with("h") || part.ends_with("H") {
             let index: u32 = part
-                .trim_right_matches("'")
-                .trim_right_matches("h")
-                .trim_right_matches("H")
+                .trim_end_matches("'")
+                .trim_end_matches("h")
+                .trim_end_matches("H")
                 .parse()?;
             if index >= HARDENED_KEY {
                 let msg = "Key index is already hardened";
@@ -565,7 +565,8 @@ mod tests {
             44,
             &[5; 32],
             &[6; 33],
-        ).unwrap();
+        )
+        .unwrap();
         assert!(key.network().unwrap() == Network::Testnet);
         assert!(key.key_type().unwrap() == ExtendedKeyType::Public);
         assert!(key.depth() == 111);
@@ -577,30 +578,33 @@ mod tests {
         );
 
         // Errors
-        assert!(
-            ExtendedKey::new_public_key(Network::Testnet, 111, &[0, 1, 2], 44, &[5; 32], &[6; 33],)
-                .is_err()
-        );
-        assert!(
-            ExtendedKey::new_public_key(
-                Network::Testnet,
-                111,
-                &[0, 1, 2, 3],
-                44,
-                &[5; 31],
-                &[6; 33],
-            ).is_err()
-        );
-        assert!(
-            ExtendedKey::new_public_key(
-                Network::Testnet,
-                111,
-                &[0, 1, 2, 3],
-                44,
-                &[5; 32],
-                &[6; 32],
-            ).is_err()
-        );
+        assert!(ExtendedKey::new_public_key(
+            Network::Testnet,
+            111,
+            &[0, 1, 2],
+            44,
+            &[5; 32],
+            &[6; 33],
+        )
+        .is_err());
+        assert!(ExtendedKey::new_public_key(
+            Network::Testnet,
+            111,
+            &[0, 1, 2, 3],
+            44,
+            &[5; 31],
+            &[6; 33],
+        )
+        .is_err());
+        assert!(ExtendedKey::new_public_key(
+            Network::Testnet,
+            111,
+            &[0, 1, 2, 3],
+            44,
+            &[5; 32],
+            &[6; 32],
+        )
+        .is_err());
     }
 
     #[test]
@@ -612,7 +616,8 @@ mod tests {
             HARDENED_KEY + 100,
             &[7; 32],
             &[8; 32],
-        ).unwrap();
+        )
+        .unwrap();
         assert!(key.network().unwrap() == Network::Mainnet);
         assert!(key.key_type().unwrap() == ExtendedKeyType::Private);
         assert!(key.depth() == 255);
@@ -622,36 +627,33 @@ mod tests {
         assert!(key.private_key().unwrap() == [8_u8; 32]);
 
         // Errors
-        assert!(
-            ExtendedKey::new_private_key(
-                Network::Mainnet,
-                255,
-                &[4, 5, 6],
-                HARDENED_KEY + 100,
-                &[7; 32],
-                &[8; 32],
-            ).is_err()
-        );
-        assert!(
-            ExtendedKey::new_private_key(
-                Network::Mainnet,
-                255,
-                &[4, 5, 6, 7],
-                HARDENED_KEY + 100,
-                &[7],
-                &[8; 32],
-            ).is_err()
-        );
-        assert!(
-            ExtendedKey::new_private_key(
-                Network::Mainnet,
-                255,
-                &[4, 5, 6, 7],
-                HARDENED_KEY + 100,
-                &[7; 32],
-                &[8; 33],
-            ).is_err()
-        );
+        assert!(ExtendedKey::new_private_key(
+            Network::Mainnet,
+            255,
+            &[4, 5, 6],
+            HARDENED_KEY + 100,
+            &[7; 32],
+            &[8; 32],
+        )
+        .is_err());
+        assert!(ExtendedKey::new_private_key(
+            Network::Mainnet,
+            255,
+            &[4, 5, 6, 7],
+            HARDENED_KEY + 100,
+            &[7],
+            &[8; 32],
+        )
+        .is_err());
+        assert!(ExtendedKey::new_private_key(
+            Network::Mainnet,
+            255,
+            &[4, 5, 6, 7],
+            HARDENED_KEY + 100,
+            &[7; 32],
+            &[8; 33],
+        )
+        .is_err());
     }
 
     #[test]
@@ -681,6 +683,7 @@ mod tests {
             0,
             &hmac.as_ref()[32..],
             &hmac.as_ref()[0..32],
-        ).unwrap()
+        )
+        .unwrap()
     }
 }

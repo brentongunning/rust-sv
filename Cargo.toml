@@ -17,7 +17,7 @@ linked-hash-map = "0.5"
 log = { version = "0.4", features = ["max_level_trace", "release_max_level_warn"] }
 murmur3 = "0.4"
 rand = "0.5"
-ring = "0.12"
+ring = "0.14"
 ripemd160 = "0.7"
 rust-base58 = "0.0"
 rust-crypto = "0.2"
