@@ -27,8 +27,6 @@ pub const MAX_PAYLOAD_SIZE: u32 = 0x02000000;
 
 /// Message commands for the header
 pub mod commands {
-    use std::collections::HashSet;
-
     /// [Addr command](https://en.bitcoin.it/wiki/Protocol_documentation#addr)
     pub const ADDR: [u8; 12] = *b"addr\0\0\0\0\0\0\0\0";
 
@@ -109,40 +107,6 @@ pub mod commands {
 
     /// [Version acknowledgement command](https://en.bitcoin.it/wiki/Protocol_documentation#verack)
     pub const VERACK: [u8; 12] = *b"verack\0\0\0\0\0\0";
-
-    lazy_static! {
-        /// Commands that this node is allowed to receive after handshake is complete.
-        /// Includes everything but version and verack.
-        pub static ref ALLOWED: HashSet<[u8; 12]> = {
-            let mut s = HashSet::new();
-            s.insert(ADDR);
-            s.insert(ALERT);
-            s.insert(BLOCK);
-            s.insert(BLOCKTXN);
-            s.insert(CMPCTBLOCK);
-            s.insert(INV);
-            s.insert(FEEFILTER);
-            s.insert(FILTERADD);
-            s.insert(FILTERCLEAR);
-            s.insert(FILTERLOAD);
-            s.insert(GETADDR);
-            s.insert(GETBLOCKS);
-            s.insert(GETBLOCKTXN);
-            s.insert(GETDATA);
-            s.insert(GETHEADERS);
-            s.insert(HEADERS);
-            s.insert(MEMPOOL);
-            s.insert(MERKLEBLOCK);
-            s.insert(NOTFOUND);
-            s.insert(PING);
-            s.insert(PONG);
-            s.insert(REJECT);
-            s.insert(SENDCMPCT);
-            s.insert(SENDHEADERS);
-            s.insert(TX);
-            s
-        };
-    }
 }
 
 /// Bitcoin peer-to-peer message with its payload
@@ -545,10 +509,12 @@ mod tests {
                 version: 0x00000001,
                 prev_hash: Hash256::decode(
                     "abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234",
-                ).unwrap(),
+                )
+                .unwrap(),
                 merkle_root: Hash256::decode(
                     "2b12fcf1b09288fcaff797d71e950e71ae42b91e8bdb2304758dfcffc2b620e3",
-                ).unwrap(),
+                )
+                .unwrap(),
                 timestamp: 0x4dd7f5c7,
                 bits: 0x1a44b9f2,
                 nonce: 0x9546a142,
@@ -690,10 +656,12 @@ mod tests {
                 version: 12345,
                 prev_hash: Hash256::decode(
                     "7766009988776600998877660099887766009988776600998877660099887766",
-                ).unwrap(),
+                )
+                .unwrap(),
                 merkle_root: Hash256::decode(
                     "2211554433221155443322115544332211554433221155443322115544332211",
-                ).unwrap(),
+                )
+                .unwrap(),
                 timestamp: 66,
                 bits: 4488,
                 nonce: 9999,

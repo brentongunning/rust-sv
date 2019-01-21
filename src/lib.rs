@@ -5,8 +5,6 @@ extern crate digest;
 extern crate dns_lookup;
 extern crate hex;
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate log;
 extern crate linked_hash_map;
 extern crate murmur3;
