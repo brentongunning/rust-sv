@@ -27,7 +27,9 @@ impl<'a> Read for AtomicReader<'a> {
             // Copy what we have and try to read the rest
             out[0..buf_len].clone_from_slice(&self.buf[0..]);
             let size = self.reader.read(&mut out[buf_len..])?;
-            if buf_len + size < out_len {
+            if size == 0 {
+                Err(io::Error::new(io::ErrorKind::NotConnected, "Disconnected"))
+            } else if buf_len + size < out_len {
                 // Didn't read enough. Put what we read into the buffer.
                 self.buf.extend_from_slice(&out[buf_len..buf_len + size]);
                 Err(io::Error::new(io::ErrorKind::TimedOut, "Incomplete read"))
@@ -38,7 +40,9 @@ impl<'a> Read for AtomicReader<'a> {
             }
         } else {
             let size = self.reader.read(&mut out[0..])?;
-            if size < out_len {
+            if size == 0 {
+                Err(io::Error::new(io::ErrorKind::NotConnected, "Disconnected"))
+            } else if size < out_len {
                 // Didn't read enough. Put what we read into the buffer.
                 self.buf.extend_from_slice(&out[0..size]);
                 Err(io::Error::new(io::ErrorKind::TimedOut, "Incomplete read"))
