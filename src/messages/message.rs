@@ -476,7 +476,7 @@ mod tests {
     use messages::tx_in::TxIn;
     use messages::tx_out::TxOut;
     use messages::version::MIN_SUPPORTED_PROTOCOL_VERSION;
-    use messages::RejectCode;
+    use messages::REJECT_INVALID;
     use script::Script;
     use std::io::Cursor;
     use std::net::Ipv6Addr;
@@ -716,7 +716,7 @@ mod tests {
         let mut v = Vec::new();
         let p = Reject {
             message: "getaddr\0\0\0\0\0".to_string(),
-            code: RejectCode::RejectMalformed,
+            code: REJECT_INVALID,
             reason: "womp womp".to_string(),
             data: vec![],
         };

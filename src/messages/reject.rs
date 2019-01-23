@@ -3,42 +3,17 @@ use messages::message::Payload;
 use std::fmt;
 use std::io;
 use std::io::{Cursor, Read, Write};
-use util::{var_int, Error, Hash256, Result, Serializable};
+use util::{var_int, Hash256, Result, Serializable};
 
-/// Message rejection error codes
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub enum RejectCode {
-    RejectMalformed = 0x01,
-    RejectInvalid = 0x10,
-    RejectObsolete = 0x11,
-    RejectDuplicate = 0x12,
-    RejectNonstandard = 0x40,
-    RejectDust = 0x41,
-    RejectInsufficientFee = 0x42,
-    RejectCheckpoint = 0x43,
-}
-
-impl RejectCode {
-    /// Converts an integer to a reject code
-    pub fn from_u8(x: u8) -> Result<RejectCode> {
-        match x {
-            x if x == RejectCode::RejectMalformed as u8 => Ok(RejectCode::RejectMalformed),
-            x if x == RejectCode::RejectInvalid as u8 => Ok(RejectCode::RejectInvalid),
-            x if x == RejectCode::RejectObsolete as u8 => Ok(RejectCode::RejectObsolete),
-            x if x == RejectCode::RejectDuplicate as u8 => Ok(RejectCode::RejectDuplicate),
-            x if x == RejectCode::RejectNonstandard as u8 => Ok(RejectCode::RejectNonstandard),
-            x if x == RejectCode::RejectDust as u8 => Ok(RejectCode::RejectDust),
-            x if x == RejectCode::RejectInsufficientFee as u8 => {
-                Ok(RejectCode::RejectInsufficientFee)
-            }
-            x if x == RejectCode::RejectCheckpoint as u8 => Ok(RejectCode::RejectCheckpoint),
-            _ => {
-                let msg = format!("Unknown rejection code: {}", x);
-                Err(Error::BadArgument(msg))
-            }
-        }
-    }
-}
+// Message rejection error codes
+pub const REJECT_MALFORMED: u8 = 0x01;
+pub const REJECT_INVALID: u8 = 0x10;
+pub const REJECT_OBSOLETE: u8 = 0x11;
+pub const REJECT_DUPLICATE: u8 = 0x12;
+pub const REJECT_NONSTANDARD: u8 = 0x40;
+pub const REJECT_DUST: u8 = 0x41;
+pub const REJECT_INSUFFICIENT_FEE: u8 = 0x42;
+pub const REJECT_CHECKPOINT: u8 = 0x43;
 
 /// Rejected message
 #[derive(PartialEq, Eq, Hash, Clone)]
@@ -46,7 +21,7 @@ pub struct Reject {
     /// Type of message rejected
     pub message: String,
     /// Error code
-    pub code: RejectCode,
+    pub code: u8,
     /// Reason for rejection
     pub reason: String,
     /// Optional extra data that may be present for some rejections
@@ -61,7 +36,7 @@ impl Serializable<Reject> for Reject {
         let mut message_bytes = vec![0; message_size];
         reader.read(&mut message_bytes)?;
         let message = String::from_utf8(message_bytes)?;
-        let code = RejectCode::from_u8(reader.read_u8()?)?;
+        let code = reader.read_u8()?;
         let reason_size = var_int::read(reader)? as usize;
         let mut reason_bytes = vec![0; reason_size];
         reader.read(&mut reason_bytes)?;
@@ -82,7 +57,7 @@ impl Serializable<Reject> for Reject {
     fn write(&self, writer: &mut dyn Write) -> io::Result<()> {
         var_int::write(self.message.as_bytes().len() as u64, writer)?;
         writer.write(&self.message.as_bytes())?;
-        writer.write_u8(self.code as u8)?;
+        writer.write_u8(self.code)?;
         var_int::write(self.reason.as_bytes().len() as u64, writer)?;
         writer.write(&self.reason.as_bytes())?;
         writer.write(&self.data)?;
@@ -128,7 +103,7 @@ mod tests {
         let b = hex::decode("027478104f6d616e6461746f72792d7363726970742d7665726966792d666c61672d6661696c65642028536372697074206661696c656420616e204f505f455155414c564552494659206f7065726174696f6e292f174bfe9e5b6e32ef2fabd164df5469f44977d93e0625238465ded771083993".as_bytes()).unwrap();
         let m = Reject::read(&mut Cursor::new(&b)).unwrap();
         assert!(m.message == "tx".to_string());
-        assert!(m.code == RejectCode::RejectInvalid);
+        assert!(m.code == REJECT_INVALID);
         assert!(m.reason == "mandatory-script-verify-flag-failed (Script failed an OP_EQUALVERIFY operation)".to_string());
         let data = "2f174bfe9e5b6e32ef2fabd164df5469f44977d93e0625238465ded771083993";
         assert!(m.data == hex::decode(data).unwrap());
@@ -139,7 +114,7 @@ mod tests {
         let mut v = Vec::new();
         let p = Reject {
             message: "block".to_string(),
-            code: RejectCode::RejectInvalid,
+            code: REJECT_INVALID,
             reason: "Block too small".to_string(),
             data: vec![5; 32],
         };

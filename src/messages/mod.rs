@@ -99,7 +99,10 @@ pub use self::node_addr::NodeAddr;
 pub use self::node_addr_ex::NodeAddrEx;
 pub use self::out_point::{OutPoint, COINBASE_OUTPOINT_HASH, COINBASE_OUTPOINT_INDEX};
 pub use self::ping::Ping;
-pub use self::reject::{Reject, RejectCode};
+pub use self::reject::{
+    Reject, REJECT_CHECKPOINT, REJECT_DUPLICATE, REJECT_DUST, REJECT_INSUFFICIENT_FEE,
+    REJECT_INVALID, REJECT_MALFORMED, REJECT_NONSTANDARD, REJECT_OBSOLETE,
+};
 pub use self::send_cmpct::SendCmpct;
 pub use self::tx::{Tx, MAX_SATOSHIS};
 pub use self::tx_in::TxIn;
