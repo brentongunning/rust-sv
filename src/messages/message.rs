@@ -469,7 +469,7 @@ pub trait Payload<T>: Serializable<T> + fmt::Debug {
 mod tests {
     use super::*;
     use messages::block_header::BlockHeader;
-    use messages::inv_vect::{InvVect, InvVectType};
+    use messages::inv_vect::{InvVect, INV_VECT_TX};
     use messages::node_addr::NodeAddr;
     use messages::node_addr_ex::NodeAddrEx;
     use messages::out_point::OutPoint;
@@ -613,7 +613,7 @@ mod tests {
         let mut v = Vec::new();
         let p = Inv {
             objects: vec![InvVect {
-                obj_type: InvVectType::Tx,
+                obj_type: INV_VECT_TX,
                 hash: Hash256([0; 32]),
             }],
         };
@@ -678,7 +678,7 @@ mod tests {
         let mut v = Vec::new();
         let p = Inv {
             objects: vec![InvVect {
-                obj_type: InvVectType::Tx,
+                obj_type: INV_VECT_TX,
                 hash: Hash256([0; 32]),
             }],
         };
@@ -690,7 +690,7 @@ mod tests {
         let mut v = Vec::new();
         let p = Inv {
             objects: vec![InvVect {
-                obj_type: InvVectType::Tx,
+                obj_type: INV_VECT_TX,
                 hash: Hash256([0; 32]),
             }],
         };

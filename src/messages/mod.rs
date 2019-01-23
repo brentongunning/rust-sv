@@ -91,7 +91,10 @@ pub use self::filter_load::{
 };
 pub use self::headers::{header_hash, Headers};
 pub use self::inv::{Inv, MAX_INV_ENTRIES};
-pub use self::inv_vect::{InvVect, InvVectType};
+pub use self::inv_vect::{
+    InvVect, INV_VECT_BLOCK, INV_VECT_COMPACT_BLOCK, INV_VECT_ERROR, INV_VECT_FILTERED_BLOCK,
+    INV_VECT_TX,
+};
 pub use self::merkle_block::MerkleBlock;
 pub use self::message::{commands, Message, Payload, MAX_PAYLOAD_SIZE, NO_CHECKSUM};
 pub use self::message_header::MessageHeader;

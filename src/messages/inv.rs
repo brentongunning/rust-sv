@@ -60,18 +60,18 @@ impl fmt::Debug for Inv {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use messages::inv_vect::InvVectType;
+    use messages::inv_vect::{INV_VECT_BLOCK, INV_VECT_TX};
     use std::io::Cursor;
     use util::Hash256;
 
     #[test]
     fn write_read() {
         let iv1 = InvVect {
-            obj_type: InvVectType::Tx,
+            obj_type: INV_VECT_TX,
             hash: Hash256([8; 32]),
         };
         let iv2 = InvVect {
-            obj_type: InvVectType::Block,
+            obj_type: INV_VECT_BLOCK,
             hash: Hash256([9; 32]),
         };
         let mut inv = Inv {
@@ -92,7 +92,7 @@ mod tests {
         };
         for _i in 0..MAX_INV_ENTRIES + 1 {
             let inv_vect = InvVect {
-                obj_type: InvVectType::Tx,
+                obj_type: INV_VECT_TX,
                 hash: Hash256([8; 32]),
             };
             inv.objects.push(inv_vect);
