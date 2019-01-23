@@ -21,6 +21,8 @@ pub enum Error {
     FromUtf8Error(FromUtf8Error),
     /// The state is not valid
     IllegalState(String),
+    /// The operation is not valid on this object
+    InvalidOperation(String),
     /// Standard library IO error
     IOError(io::Error),
     /// Error parsing an integer
@@ -46,6 +48,7 @@ impl std::fmt::Display for Error {
             Error::FromHexError(e) => f.write_str(&format!("Hex decoding error: {}", e)),
             Error::FromUtf8Error(e) => f.write_str(&format!("Utf8 parsing error: {}", e)),
             Error::IllegalState(s) => f.write_str(&format!("Illegal state: {}", s)),
+            Error::InvalidOperation(s) => f.write_str(&format!("Invalid operation: {}", s)),
             Error::IOError(e) => f.write_str(&format!("IO error: {}", e)),
             Error::ParseIntError(e) => f.write_str(&format!("ParseIntError: {}", e)),
             Error::ScriptError(s) => f.write_str(&format!("Script error: {}", s)),
@@ -66,6 +69,7 @@ impl std::error::Error for Error {
             Error::FromHexError(_) => "Hex decoding error",
             Error::FromUtf8Error(_) => "Utf8 parsing error",
             Error::IllegalState(_) => "Illegal state",
+            Error::InvalidOperation(_) => "Invalid operation",
             Error::IOError(_) => "IO error",
             Error::ParseIntError(_) => "Parse int error",
             Error::ScriptError(_) => "Script error",

@@ -3,7 +3,7 @@ use messages::message::Payload;
 use std::fmt;
 use std::io;
 use std::io::{Cursor, Read, Write};
-use util::{var_int, Hash256, Result, Serializable};
+use util::{var_int, Error, Hash256, Result, Serializable};
 
 // Message rejection error codes
 pub const REJECT_MALFORMED: u8 = 0x01;
@@ -16,7 +16,7 @@ pub const REJECT_INSUFFICIENT_FEE: u8 = 0x42;
 pub const REJECT_CHECKPOINT: u8 = 0x43;
 
 /// Rejected message
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(Default, PartialEq, Eq, Hash, Clone)]
 pub struct Reject {
     /// Type of message rejected
     pub message: String,
@@ -28,6 +28,18 @@ pub struct Reject {
     ///
     /// Currently this is only a 32-byte hash of the block or transaction if applicable.
     pub data: Vec<u8>,
+}
+
+impl Reject {
+    /// Returns the transaction ID for this message
+    pub fn txid(&self) -> Result<Hash256> {
+        if self.data.len() != 32 {
+            return Err(Error::InvalidOperation("No transaction hash".to_string()));
+        }
+        let mut txid = Hash256([0; 32]);
+        txid.0.clone_from_slice(&self.data);
+        Ok(txid)
+    }
 }
 
 impl Serializable<Reject> for Reject {
@@ -97,6 +109,17 @@ mod tests {
     use super::*;
     use hex;
     use std::io::Cursor;
+
+    #[test]
+    fn txid() {
+        let mut reject = Reject {
+            data: vec![5; 32],
+            ..Default::default()
+        };
+        assert!(reject.txid().is_ok());
+        reject.data = vec![3; 33];
+        assert!(reject.txid().is_err());
+    }
 
     #[test]
     fn read_bytes() {
