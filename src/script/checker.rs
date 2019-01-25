@@ -75,11 +75,11 @@ impl<'a> Checker for TransactionChecker<'a> {
         )?;
         let der_sig = &sig[0..sig.len() - 1];
         let secp = Secp256k1::verification_only();
-        let mut signature = Signature::from_der(&secp, der_sig)?;
+        let mut signature = Signature::from_der(der_sig)?;
         // OpenSSL-generated signatures may not be normalized, but libsecp256kq requires them to be
-        signature.normalize_s(&secp);
+        signature.normalize_s();
         let message = Message::from_slice(&sig_hash.0)?;
-        let public_key = PublicKey::from_slice(&secp, &pubkey)?;
+        let public_key = PublicKey::from_slice(&pubkey)?;
         Ok(secp.verify(&message, &signature, &public_key).is_ok())
     }
 
@@ -156,7 +156,7 @@ mod tests {
     fn standard_p2pkh_test(sighash_type: u8) {
         let secp = Secp256k1::new();
         let private_key = [1; 32];
-        let secret_key = SecretKey::from_slice(&secp, &private_key).unwrap();
+        let secret_key = SecretKey::from_slice(&private_key).unwrap();
         let pk = PublicKey::from_secret_key(&secp, &secret_key).serialize();
         let pkh = hash160(&pk);
 
@@ -228,9 +228,9 @@ mod tests {
         let private_key1 = [1; 32];
         let private_key2 = [2; 32];
         let private_key3 = [3; 32];
-        let secret_key1 = SecretKey::from_slice(&secp, &private_key1).unwrap();
-        let secret_key2 = SecretKey::from_slice(&secp, &private_key2).unwrap();
-        let secret_key3 = SecretKey::from_slice(&secp, &private_key3).unwrap();
+        let secret_key1 = SecretKey::from_slice(&private_key1).unwrap();
+        let secret_key2 = SecretKey::from_slice(&private_key2).unwrap();
+        let secret_key3 = SecretKey::from_slice(&private_key3).unwrap();
         let pk1 = PublicKey::from_secret_key(&secp, &secret_key1).serialize();
         let pk2 = PublicKey::from_secret_key(&secp, &secret_key2).serialize();
         let pk3 = PublicKey::from_secret_key(&secp, &secret_key3).serialize();
@@ -305,12 +305,12 @@ mod tests {
         let secp = Secp256k1::new();
 
         let private_key1 = [1; 32];
-        let secret_key1 = SecretKey::from_slice(&secp, &private_key1).unwrap();
+        let secret_key1 = SecretKey::from_slice(&private_key1).unwrap();
         let pk1 = PublicKey::from_secret_key(&secp, &secret_key1).serialize();
         let pkh1 = hash160(&pk1);
 
         let private_key2 = [2; 32];
-        let secret_key2 = SecretKey::from_slice(&secp, &private_key2).unwrap();
+        let secret_key2 = SecretKey::from_slice(&private_key2).unwrap();
         let pk2 = PublicKey::from_secret_key(&secp, &secret_key2).serialize();
         let pkh2 = hash160(&pk2);
 
@@ -433,12 +433,12 @@ mod tests {
         let secp = Secp256k1::new();
 
         let private_key1 = [1; 32];
-        let secret_key1 = SecretKey::from_slice(&secp, &private_key1).unwrap();
+        let secret_key1 = SecretKey::from_slice(&private_key1).unwrap();
         let pk1 = PublicKey::from_secret_key(&secp, &secret_key1).serialize();
         let pkh1 = hash160(&pk1);
 
         let private_key2 = [2; 32];
-        let secret_key2 = SecretKey::from_slice(&secp, &private_key2).unwrap();
+        let secret_key2 = SecretKey::from_slice(&private_key2).unwrap();
         let pk2 = PublicKey::from_secret_key(&secp, &secret_key2).serialize();
         let pkh2 = hash160(&pk2);
 
@@ -524,7 +524,8 @@ mod tests {
             Amount(20),
             sighash_type,
             &mut cache,
-        ).unwrap();
+        )
+        .unwrap();
         let sig2 = generate_signature(&private_key2, &sig_hash2, sighash_type).unwrap();
 
         let mut sig_script2 = Script::new();

@@ -20,7 +20,7 @@ ring = "0.14"
 ripemd160 = "0.7"
 rust-base58 = "0.0"
 rust-crypto = "0.2"
-secp256k1 = "0.11"
+secp256k1 = "0.12"
 snowflake = "1.3"
 
 [profile.release]

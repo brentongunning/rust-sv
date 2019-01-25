@@ -43,10 +43,10 @@ pub fn generate_signature(
 ) -> Result<Vec<u8>> {
     let secp = Secp256k1::signing_only();
     let message = Message::from_slice(&sighash.0)?;
-    let secret_key = SecretKey::from_slice(&secp, private_key)?;
+    let secret_key = SecretKey::from_slice(private_key)?;
     let mut signature = secp.sign(&message, &secret_key);
-    signature.normalize_s(&secp);
-    let mut sig = signature.serialize_der(&secp);
+    signature.normalize_s();
+    let mut sig = signature.serialize_der();
     sig.push(sighash_type);
     Ok(sig)
 }
