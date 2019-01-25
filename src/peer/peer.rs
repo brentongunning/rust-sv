@@ -376,17 +376,17 @@ impl Peer {
     fn handle_message(&self, message: &Message) -> Result<()> {
         // A subset of messages are handled directly by the peer
         match message {
-            &Message::FeeFilter(ref feefilter) => {
+            Message::FeeFilter(feefilter) => {
                 *self.minfee.lock().unwrap() = feefilter.minfee;
             }
-            &Message::Ping(ref ping) => {
+            Message::Ping(ping) => {
                 let pong = Message::Pong(ping.clone());
                 self.send(&pong)?;
             }
-            &Message::SendHeaders => {
+            Message::SendHeaders => {
                 self.sendheaders.store(true, Ordering::Relaxed);
             }
-            &Message::SendCmpct(ref sendcmpct) => {
+            Message::SendCmpct(sendcmpct) => {
                 let enable = sendcmpct.use_cmpctblock();
                 self.sendcmpct.store(enable, Ordering::Relaxed);
             }
