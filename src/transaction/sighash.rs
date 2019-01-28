@@ -23,6 +23,16 @@ const FORK_ID: u32 = 0;
 /// Generates a transaction digest for signing
 ///
 /// This will use either BIP-143 or the legacy algorithm depending on if SIGHASH_FORKID is set.
+///
+/// # Arguments
+///
+/// * `tx` - Spending transaction
+/// * `n_input` - Spending input index
+/// * `script_code` - The pk_script of the output being spent. This may be a subset of the
+/// pk_script if OP_CODESEPARATOR is used.
+/// * `amount` - The satoshi amount in the output being spent
+/// * `sighash_type` - Sighash flags
+/// * `cache` - Cache to store intermediate values for future sighash calls.
 pub fn sighash(
     tx: &Tx,
     n_input: usize,
@@ -259,7 +269,8 @@ mod tests {
                 prev_output: OutPoint {
                     hash: Hash256::decode(
                         "f671dc000ad12795e86b59b27e0c367d9b026bbd4141c227b9285867a53bb6f7",
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                     index: 0,
                 },
                 sig_script: Script(vec![]),
@@ -286,7 +297,8 @@ mod tests {
             Amount(260000000),
             sighash_type,
             &mut cache,
-        ).unwrap();
+        )
+        .unwrap();
         let expected = "1e2121837829018daf3aeadab76f1a542c49a3600ded7bd74323ee74ce0d840c";
         assert!(sighash.0.to_vec() == hex::decode(expected).unwrap());
         assert!(cache.hash_prevouts.is_some());
@@ -303,7 +315,8 @@ mod tests {
                 prev_output: OutPoint {
                     hash: Hash256::decode(
                         "bf6c1139ea01ca054b8d00aa0a088daaeab4f3b8e111626c6be7d603a9dd8dff",
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                     index: 0,
                 },
                 sig_script: Script(vec![]),
