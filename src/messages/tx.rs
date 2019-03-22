@@ -1,13 +1,13 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use linked_hash_map::LinkedHashMap;
-use messages::message::Payload;
-use messages::{OutPoint, TxIn, TxOut, COINBASE_OUTPOINT_HASH, COINBASE_OUTPOINT_INDEX};
-use script::{op_codes, Script, TransactionChecker};
+use crate::messages::message::Payload;
+use crate::messages::{OutPoint, TxIn, TxOut, COINBASE_OUTPOINT_HASH, COINBASE_OUTPOINT_INDEX};
+use crate::script::{op_codes, Script, TransactionChecker};
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use transaction::sighash::SigHashCache;
-use util::{sha256d, var_int, Error, Hash256, Result, Serializable};
+use crate::transaction::sighash::SigHashCache;
+use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
 
 /// Maximum number of satoshis possible
 pub const MAX_SATOSHIS: i64 = 21_000_000 * 100_000_000;
@@ -210,9 +210,9 @@ impl fmt::Debug for Tx {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use messages::OutPoint;
+    use crate::messages::OutPoint;
     use std::io::Cursor;
-    use util::{Amount, Hash256};
+    use crate::util::{Amount, Hash256};
 
     #[test]
     fn write_read() {

@@ -1,23 +1,23 @@
-use messages::addr::Addr;
-use messages::block::Block;
-use messages::block_locator::BlockLocator;
-use messages::fee_filter::FeeFilter;
-use messages::filter_add::FilterAdd;
-use messages::filter_load::FilterLoad;
-use messages::headers::Headers;
-use messages::inv::Inv;
-use messages::merkle_block::MerkleBlock;
-use messages::message_header::MessageHeader;
-use messages::ping::Ping;
-use messages::reject::Reject;
-use messages::send_cmpct::SendCmpct;
-use messages::tx::Tx;
-use messages::version::Version;
+use crate::messages::addr::Addr;
+use crate::messages::block::Block;
+use crate::messages::block_locator::BlockLocator;
+use crate::messages::fee_filter::FeeFilter;
+use crate::messages::filter_add::FilterAdd;
+use crate::messages::filter_load::FilterLoad;
+use crate::messages::headers::Headers;
+use crate::messages::inv::Inv;
+use crate::messages::merkle_block::MerkleBlock;
+use crate::messages::message_header::MessageHeader;
+use crate::messages::ping::Ping;
+use crate::messages::reject::Reject;
+use crate::messages::send_cmpct::SendCmpct;
+use crate::messages::tx::Tx;
+use crate::messages::version::Version;
 use ring::digest;
 use std::fmt;
 use std::io;
 use std::io::{Cursor, Read, Write};
-use util::{Error, Result, Serializable};
+use crate::util::{Error, Result, Serializable};
 
 /// Checksum to use when there is an empty payload
 pub const NO_CHECKSUM: [u8; 4] = [0x5d, 0xf6, 0xe0, 0xe2];
@@ -468,20 +468,20 @@ pub trait Payload<T>: Serializable<T> + fmt::Debug {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use messages::block_header::BlockHeader;
-    use messages::inv_vect::{InvVect, INV_VECT_TX};
-    use messages::node_addr::NodeAddr;
-    use messages::node_addr_ex::NodeAddrEx;
-    use messages::out_point::OutPoint;
-    use messages::tx_in::TxIn;
-    use messages::tx_out::TxOut;
-    use messages::version::MIN_SUPPORTED_PROTOCOL_VERSION;
-    use messages::REJECT_INVALID;
-    use script::Script;
+    use crate::messages::block_header::BlockHeader;
+    use crate::messages::inv_vect::{InvVect, INV_VECT_TX};
+    use crate::messages::node_addr::NodeAddr;
+    use crate::messages::node_addr_ex::NodeAddrEx;
+    use crate::messages::out_point::OutPoint;
+    use crate::messages::tx_in::TxIn;
+    use crate::messages::tx_out::TxOut;
+    use crate::messages::version::MIN_SUPPORTED_PROTOCOL_VERSION;
+    use crate::messages::REJECT_INVALID;
+    use crate::script::Script;
     use std::io::Cursor;
     use std::net::Ipv6Addr;
     use std::time::UNIX_EPOCH;
-    use util::{secs_since, Amount, BloomFilter, Hash256};
+    use crate::util::{secs_since, Amount, BloomFilter, Hash256};
 
     #[test]
     fn write_read() {

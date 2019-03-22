@@ -1,6 +1,6 @@
-use messages::{Message, MessageHeader, Ping, Version, NODE_BITCOIN_CASH, NODE_NETWORK};
-use network::Network;
-use peer::atomic_reader::AtomicReader;
+use crate::messages::{Message, MessageHeader, Ping, Version, NODE_BITCOIN_CASH, NODE_NETWORK};
+use crate::network::Network;
+use crate::peer::atomic_reader::AtomicReader;
 use snowflake::ProcessUniqueId;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -11,8 +11,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, Weak};
 use std::thread;
 use std::time::{Duration, UNIX_EPOCH};
-use util::rx::{Observable, Observer, Single, Subject};
-use util::{secs_since, Error, Result};
+use crate::util::rx::{Observable, Observer, Single, Subject};
+use crate::util::{secs_since, Error, Result};
 
 /// Time to wait for the initial TCP connection
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
@@ -41,7 +41,7 @@ pub struct PeerMessage {
 
 /// Filters peers based on their version information before connecting
 pub trait PeerFilter: Send + Sync {
-    fn connectable(&self, &Version) -> bool;
+    fn connectable(&self, _: &Version) -> bool;
 }
 
 /// Filters out all peers except for Bitcoin SV full nodes

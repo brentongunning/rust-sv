@@ -1,8 +1,8 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use messages::message::Payload;
+use crate::messages::message::Payload;
 use std::io;
 use std::io::{Read, Write};
-use util::{var_int, BloomFilter, Result, Serializable};
+use crate::util::{var_int, BloomFilter, Result, Serializable};
 
 /// Filter is not adjusted when a match is found
 pub const BLOOM_UPDATE_NONE: u8 = 0;

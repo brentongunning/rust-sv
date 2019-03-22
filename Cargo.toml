@@ -6,6 +6,7 @@ repository = "https://github.com/brentongunning/rust-sv"
 authors = ["Brenton Gunning <brentongunning@gmail.com>"]
 keywords = ["bitcoin", "sv", "cash", "crypto"]
 license = "MIT"
+edition = "2018"
 
 [dependencies]
 byteorder = "1.2"

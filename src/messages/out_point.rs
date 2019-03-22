@@ -1,7 +1,7 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io;
 use std::io::{Read, Write};
-use util::{Hash256, Result, Serializable};
+use crate::util::{Hash256, Result, Serializable};
 
 /// The coinbase transaction input will have this hash
 pub const COINBASE_OUTPOINT_HASH: Hash256 = Hash256([0; 32]);

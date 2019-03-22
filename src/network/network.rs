@@ -1,8 +1,8 @@
 use hex;
-use messages::{Block, BlockHeader, OutPoint, Tx, TxIn, TxOut};
-use network::SeedIter;
-use script::Script;
-use util::{Amount, Error, Hash256, Result};
+use crate::messages::{Block, BlockHeader, OutPoint, Tx, TxIn, TxOut};
+use crate::network::SeedIter;
+use crate::script::Script;
+use crate::util::{Amount, Error, Hash256, Result};
 
 /// Network type
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]

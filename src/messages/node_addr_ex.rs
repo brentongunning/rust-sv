@@ -1,8 +1,8 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use messages::node_addr::NodeAddr;
+use crate::messages::node_addr::NodeAddr;
 use std::io;
 use std::io::{Read, Write};
-use util::{Result, Serializable};
+use crate::util::{Result, Serializable};
 
 /// Node network address extended with a last connected time
 #[derive(Debug, Default, PartialEq, Eq, Hash, Clone)]

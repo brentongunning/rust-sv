@@ -2,7 +2,7 @@
 
 use ring::digest::{digest, SHA256};
 use std::str;
-use util::{Bits, Error, Result};
+use crate::util::{Bits, Error, Result};
 
 /// Wordlist language
 pub enum Wordlist {

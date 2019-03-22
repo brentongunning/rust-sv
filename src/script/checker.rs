@@ -1,7 +1,7 @@
-use messages::Tx;
+use crate::messages::Tx;
 use secp256k1::{Message, PublicKey, Secp256k1, Signature};
-use transaction::sighash::{sighash, SigHashCache, SIGHASH_FORKID};
-use util::{Amount, Error, Result};
+use crate::transaction::sighash::{sighash, SigHashCache, SIGHASH_FORKID};
+use crate::util::{Amount, Error, Result};
 
 /// Locktimes greater than or equal to this are interpreted as timestamps. Less then, block heights.
 const LOCKTIME_THRESHOLD: i32 = 500000000;
@@ -137,15 +137,15 @@ impl<'a> Checker for TransactionChecker<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use messages::{OutPoint, TxIn, TxOut};
-    use script::op_codes::*;
-    use script::Script;
+    use crate::messages::{OutPoint, TxIn, TxOut};
+    use crate::script::op_codes::*;
+    use crate::script::Script;
     use secp256k1::{PublicKey, Secp256k1, SecretKey};
-    use transaction::generate_signature;
-    use transaction::sighash::{
+    use crate::transaction::generate_signature;
+    use crate::transaction::sighash::{
         SIGHASH_ALL, SIGHASH_ANYONECANPAY, SIGHASH_FORKID, SIGHASH_NONE, SIGHASH_SINGLE,
     };
-    use util::{hash160, Hash256};
+    use crate::util::{hash160, Hash256};
 
     #[test]
     fn standard_p2pkh() {

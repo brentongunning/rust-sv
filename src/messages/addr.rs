@@ -1,9 +1,9 @@
-use messages::message::Payload;
-use messages::node_addr_ex::NodeAddrEx;
+use crate::messages::message::Payload;
+use crate::messages::node_addr_ex::NodeAddrEx;
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use util::{var_int, Error, Result, Serializable};
+use crate::util::{var_int, Error, Result, Serializable};
 
 /// Maximum number of addresses allowed in an Addr message
 const MAX_ADDR_COUNT: u64 = 1000;
@@ -59,7 +59,7 @@ impl fmt::Debug for Addr {
 mod tests {
     use super::*;
     use hex;
-    use messages::NodeAddr;
+    use crate::messages::NodeAddr;
     use std::io::Cursor;
     use std::net::Ipv6Addr;
 

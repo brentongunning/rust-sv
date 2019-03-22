@@ -1,9 +1,9 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use messages::OutPoint;
-use script::Script;
+use crate::messages::OutPoint;
+use crate::script::Script;
 use std::io;
 use std::io::{Read, Write};
-use util::{var_int, Result, Serializable};
+use crate::util::{var_int, Result, Serializable};
 
 /// Transaction input
 #[derive(Debug, Default, PartialEq, Eq, Hash, Clone)]
@@ -50,7 +50,7 @@ impl Serializable<TxIn> for TxIn {
 mod tests {
     use super::*;
     use std::io::Cursor;
-    use util::Hash256;
+    use crate::util::Hash256;
 
     #[test]
     fn write_read() {

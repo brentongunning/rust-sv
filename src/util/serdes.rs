@@ -1,6 +1,6 @@
 use std::io;
 use std::io::{Read, Write};
-use util::Result;
+use crate::util::Result;
 
 /// An object that may be serialized and deserialized
 pub trait Serializable<T> {
