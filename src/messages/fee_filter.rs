@@ -1,8 +1,8 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use messages::message::Payload;
+use crate::messages::message::Payload;
 use std::io;
 use std::io::{Read, Write};
-use util::{Result, Serializable};
+use crate::util::{Result, Serializable};
 
 /// Specifies the minimum transaction fee this node accepts
 #[derive(Debug, Default, PartialEq, Eq, Hash, Clone)]

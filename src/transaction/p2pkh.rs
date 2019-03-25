@@ -1,8 +1,8 @@
 //! Pay-to-public-key-hash transaction scripts
 
-use script::op_codes::{OP_CHECKSIG, OP_DUP, OP_EQUALVERIFY, OP_HASH160, OP_PUSH};
-use script::{next_op, Script};
-use util::{Error, Hash160, Result};
+use crate::script::op_codes::{OP_CHECKSIG, OP_DUP, OP_EQUALVERIFY, OP_HASH160, OP_PUSH};
+use crate::script::{next_op, Script};
+use crate::util::{Error, Hash160, Result};
 
 /// Creates the pubkey script to send to an address
 pub fn create_pk_script(address: &Hash160) -> Script {
@@ -83,7 +83,7 @@ pub fn extract_pubkeyhash(pk_script: &[u8]) -> Result<Hash160> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use script::op_codes::OP_1;
+    use crate::script::op_codes::OP_1;
 
     #[test]
     fn check_pk_script_test() {

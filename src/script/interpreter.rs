@@ -1,13 +1,13 @@
 use digest::{FixedOutput, Input};
 use ring::digest::{digest, SHA1, SHA256};
 use ripemd160::{Digest, Ripemd160};
-use script::op_codes::*;
-use script::stack::{decode_bool, decode_num, encode_num, encode_num_overflow, pop_bool, pop_num};
-use script::{
+use crate::script::op_codes::*;
+use crate::script::stack::{decode_bool, decode_num, encode_num, encode_num_overflow, pop_bool, pop_num};
+use crate::script::{
     Checker, MAX_OPS_PER_SCRIPT, MAX_PUBKEYS_PER_MULTISIG, MAX_SCRIPT_ELEMENT_SIZE, MAX_SCRIPT_SIZE,
 };
-use transaction::sighash::SIGHASH_FORKID;
-use util::{hash160, lshift, rshift, sha256d, Error, Result};
+use crate::transaction::sighash::SIGHASH_FORKID;
+use crate::util::{hash160, lshift, rshift, sha256d, Error, Result};
 
 // Stack capacity defaults, which may exceeded
 const STACK_CAPACITY: usize = 100;
@@ -889,7 +889,7 @@ fn skip_branch(script: &[u8], mut i: usize, n_ops: &mut usize) -> usize {
 mod tests {
     use super::*;
     use hex;
-    use script::Script;
+    use crate::script::Script;
     use std::cell::RefCell;
 
     #[test]

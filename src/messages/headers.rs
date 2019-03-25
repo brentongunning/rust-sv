@@ -1,10 +1,10 @@
 use byteorder::{ReadBytesExt, WriteBytesExt};
-use messages::block_header::BlockHeader;
-use messages::message::Payload;
+use crate::messages::block_header::BlockHeader;
+use crate::messages::message::Payload;
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use util::{var_int, Error, Hash256, Result, Serializable};
+use crate::util::{var_int, Error, Hash256, Result, Serializable};
 
 /// Collection of block headers
 #[derive(Default, PartialEq, Eq, Hash, Clone)]
@@ -62,7 +62,7 @@ pub fn header_hash(i: usize, headers: &Vec<BlockHeader>) -> Result<Hash256> {
 mod tests {
     use super::*;
     use std::io::Cursor;
-    use util::Hash256;
+    use crate::util::Hash256;
 
     #[test]
     fn write_read() {

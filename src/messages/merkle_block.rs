@@ -1,11 +1,11 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use hex;
-use messages::block_header::BlockHeader;
-use messages::message::Payload;
+use crate::messages::block_header::BlockHeader;
+use crate::messages::message::Payload;
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use util::{sha256d, var_int, Error, Hash256, Result, Serializable};
+use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
 
 /// A block header and partial merkle tree for SPV nodes to validate transactions
 #[derive(Default, PartialEq, Eq, Hash, Clone)]

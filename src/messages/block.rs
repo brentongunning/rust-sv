@@ -1,10 +1,10 @@
 use linked_hash_map::LinkedHashMap;
-use messages::{BlockHeader, OutPoint, Payload, Tx, TxOut};
+use crate::messages::{BlockHeader, OutPoint, Payload, Tx, TxOut};
 use std::collections::{HashSet, VecDeque};
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use util::{sha256d, var_int, Error, Hash256, Result, Serializable};
+use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
 
 /// Block height that Bitcoin Cash forked from BTC
 pub const BITCOIN_CASH_FORK_HEIGHT: i32 = 478558;
@@ -159,10 +159,10 @@ impl fmt::Debug for Block {
 mod tests {
     use super::*;
     use hex;
-    use messages::{OutPoint, TxIn, TxOut};
-    use script::Script;
+    use crate::messages::{OutPoint, TxIn, TxOut};
+    use crate::script::Script;
     use std::io::Cursor;
-    use util::{Amount, Hash256};
+    use crate::util::{Amount, Hash256};
 
     #[test]
     fn read_bytes() {

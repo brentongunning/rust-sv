@@ -1,7 +1,7 @@
 //! Functions to convert between different bitcoin denominations
 
 use std::fmt;
-use util::{Error, Result};
+use crate::util::{Error, Result};
 
 /// Denomination of a bitcoin amount
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]

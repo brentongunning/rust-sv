@@ -1,9 +1,9 @@
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use messages::message::Payload;
-use messages::version::MIN_SUPPORTED_PROTOCOL_VERSION;
+use crate::messages::message::Payload;
+use crate::messages::version::MIN_SUPPORTED_PROTOCOL_VERSION;
 use std::io;
 use std::io::{Read, Write};
-use util::{var_int, Error, Hash256, Result, Serializable};
+use crate::util::{var_int, Error, Hash256, Result, Serializable};
 
 /// Return results until either there are 2000 for getheaders or 500 or getblocks, or no more left
 pub const NO_HASH_STOP: Hash256 = Hash256([0; 32]);

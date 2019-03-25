@@ -4,7 +4,7 @@ use std::fmt;
 use std::io;
 use std::io::{Cursor, Read, Write};
 use std::str;
-use util::{Error, Result, Serializable};
+use crate::util::{Error, Result, Serializable};
 
 /// Header that begins all messages
 #[derive(Default, PartialEq, Eq, Hash, Clone)]

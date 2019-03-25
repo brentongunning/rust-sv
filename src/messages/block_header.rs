@@ -2,7 +2,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::cmp::min;
 use std::io;
 use std::io::{Read, Write};
-use util::{sha256d, Error, Hash256, Result, Serializable};
+use crate::util::{sha256d, Error, Hash256, Result, Serializable};
 
 /// Block header
 #[derive(Debug, Default, PartialEq, Eq, Hash, Clone)]

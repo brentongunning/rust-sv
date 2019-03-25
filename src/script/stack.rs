@@ -1,4 +1,4 @@
-use util::{Error, Result};
+use crate::util::{Error, Result};
 
 /// Pops a bool off the stack
 #[inline]

@@ -1,10 +1,10 @@
 //! Transaction sighash helpers
 
 use byteorder::{LittleEndian, WriteBytesExt};
-use messages::{OutPoint, Payload, Tx, TxOut};
-use script::{next_op, op_codes, Script};
+use crate::messages::{OutPoint, Payload, Tx, TxOut};
+use crate::script::{next_op, op_codes, Script};
 use std::io::Write;
-use util::{sha256d, var_int, Amount, Error, Hash256, Result, Serializable};
+use crate::util::{sha256d, var_int, Amount, Error, Hash256, Result, Serializable};
 
 /// Signs all of the outputs
 pub const SIGHASH_ALL: u8 = 0x01;
@@ -252,11 +252,11 @@ fn legacy_sighash(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use address::addr_decode;
+    use crate::address::addr_decode;
     use hex;
-    use messages::{OutPoint, TxIn};
-    use network::Network;
-    use transaction::p2pkh;
+    use crate::messages::{OutPoint, TxIn};
+    use crate::network::Network;
+    use crate::transaction::p2pkh;
 
     #[test]
     fn bip143_sighash_test() {

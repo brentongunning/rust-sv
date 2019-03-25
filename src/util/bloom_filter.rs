@@ -6,7 +6,7 @@ use std::fmt;
 use std::io;
 use std::io::{Cursor, Read, Write};
 use std::num::Wrapping;
-use util::{var_int, Error, Result, Serializable};
+use crate::util::{var_int, Error, Result, Serializable};
 
 /// Maximum number of bytes in the bloom filter bit field
 pub const BLOOM_FILTER_MAX_FILTER_SIZE: usize = 36000;
