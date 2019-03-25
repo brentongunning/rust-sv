@@ -1,8 +1,8 @@
-use hex;
 use crate::messages::{Block, BlockHeader, OutPoint, Tx, TxIn, TxOut};
 use crate::network::SeedIter;
 use crate::script::Script;
 use crate::util::{Amount, Error, Hash256, Result};
+use hex;
 
 /// Network type
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
@@ -49,7 +49,8 @@ impl Network {
                     prev_hash: Hash256([0; 32]),
                     merkle_root: Hash256::decode(
                         "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                     timestamp: 1231006505,
                     bits: 0x1d00ffff,
                     nonce: 2083236893,
@@ -83,7 +84,8 @@ impl Network {
                     prev_hash: Hash256([0; 32]),
                     merkle_root: Hash256::decode(
                         "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                     timestamp: 1296688602,
                     bits: 0x1d00ffff,
                     nonce: 414098458,

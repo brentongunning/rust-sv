@@ -1,6 +1,8 @@
 use crate::messages::{Message, MessageHeader, Ping, Version, NODE_BITCOIN_CASH, NODE_NETWORK};
 use crate::network::Network;
 use crate::peer::atomic_reader::AtomicReader;
+use crate::util::rx::{Observable, Observer, Single, Subject};
+use crate::util::{secs_since, Error, Result};
 use snowflake::ProcessUniqueId;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -11,8 +13,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, Weak};
 use std::thread;
 use std::time::{Duration, UNIX_EPOCH};
-use crate::util::rx::{Observable, Observer, Single, Subject};
-use crate::util::{secs_since, Error, Result};
 
 /// Time to wait for the initial TCP connection
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(5);

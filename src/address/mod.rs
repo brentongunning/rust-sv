@@ -22,10 +22,10 @@
 //! let pubkeyhash = hash160(&[0; 33]);
 //! let addr = addr_encode(&pubkeyhash, AddressType::P2PKH, Network::Mainnet);
 //! ```
-//! 
+//!
 use crate::network::Network;
-use rust_base58::base58::{FromBase58, ToBase58};
 use crate::util::{sha256d, Error, Hash160, Result};
+use rust_base58::base58::{FromBase58, ToBase58};
 
 /// Address type which is either P2PKH or P2SH
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -96,8 +96,8 @@ pub fn addr_decode(input: &str, network: Network) -> Result<(Hash160, AddressTyp
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hex;
     use crate::util::hash160;
+    use hex;
 
     #[test]
     fn to_addr() {

@@ -29,8 +29,8 @@
 //! tx.inputs[0].sig_script = create_sig_script(&signature, &public_key);
 //! ```
 
-use secp256k1::{Message, Secp256k1, SecretKey};
 use crate::util::{Hash256, Result};
+use secp256k1::{Message, Secp256k1, SecretKey};
 
 pub mod p2pkh;
 pub mod sighash;

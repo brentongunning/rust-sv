@@ -1,7 +1,7 @@
+use crate::util::{Hash256, Result, Serializable};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{Hash256, Result, Serializable};
 
 /// The coinbase transaction input will have this hash
 pub const COINBASE_OUTPOINT_HASH: Hash256 = Hash256([0; 32]);
@@ -52,7 +52,8 @@ mod tests {
         let t = OutPoint {
             hash: Hash256::decode(
                 "123412345678567890ab90abcdefcdef123412345678567890ab90abcdefcdef",
-            ).unwrap(),
+            )
+            .unwrap(),
             index: 0,
         };
         t.write(&mut v).unwrap();

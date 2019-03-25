@@ -1,8 +1,8 @@
 //! Functions to convert data to and from mnemonic words
 
+use crate::util::{Bits, Error, Result};
 use ring::digest::{digest, SHA256};
 use std::str;
-use crate::util::{Bits, Error, Result};
 
 /// Wordlist language
 pub enum Wordlist {

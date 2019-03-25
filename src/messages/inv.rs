@@ -1,9 +1,9 @@
 use crate::messages::inv_vect::InvVect;
 use crate::messages::message::Payload;
+use crate::util::{var_int, Error, Result, Serializable};
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{var_int, Error, Result, Serializable};
 
 /// Maximum number of objects in an inv message
 pub const MAX_INV_ENTRIES: usize = 50000;
@@ -61,8 +61,8 @@ impl fmt::Debug for Inv {
 mod tests {
     use super::*;
     use crate::messages::inv_vect::{INV_VECT_BLOCK, INV_VECT_TX};
-    use std::io::Cursor;
     use crate::util::Hash256;
+    use std::io::Cursor;
 
     #[test]
     fn write_read() {

@@ -1,10 +1,10 @@
-use byteorder::{ReadBytesExt, WriteBytesExt};
 use crate::messages::block_header::BlockHeader;
 use crate::messages::message::Payload;
+use crate::util::{var_int, Error, Hash256, Result, Serializable};
+use byteorder::{ReadBytesExt, WriteBytesExt};
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{var_int, Error, Hash256, Result, Serializable};
 
 /// Collection of block headers
 #[derive(Default, PartialEq, Eq, Hash, Clone)]
@@ -61,8 +61,8 @@ pub fn header_hash(i: usize, headers: &Vec<BlockHeader>) -> Result<Hash256> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Cursor;
     use crate::util::Hash256;
+    use std::io::Cursor;
 
     #[test]
     fn write_read() {
@@ -73,10 +73,12 @@ mod tests {
                     version: 12345,
                     prev_hash: Hash256::decode(
                         "7766009988776600998877660099887766009988776600998877660099887766",
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                     merkle_root: Hash256::decode(
                         "2211554433221155443322115544332211554433221155443322115544332211",
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                     timestamp: 66,
                     bits: 4488,
                     nonce: 9999,
@@ -85,10 +87,12 @@ mod tests {
                     version: 67890,
                     prev_hash: Hash256::decode(
                         "1122334455112233445511223344551122334455112233445511223344551122",
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                     merkle_root: Hash256::decode(
                         "6677889900667788990066778899006677889900667788990066778899006677",
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                     timestamp: 77,
                     bits: 5599,
                     nonce: 1111,
@@ -106,10 +110,12 @@ mod tests {
             version: 12345,
             prev_hash: Hash256::decode(
                 "7766009988776600998877660099887766009988776600998877660099887766",
-            ).unwrap(),
+            )
+            .unwrap(),
             merkle_root: Hash256::decode(
                 "2211554433221155443322115544332211554433221155443322115544332211",
-            ).unwrap(),
+            )
+            .unwrap(),
             timestamp: 66,
             bits: 4488,
             nonce: 9999,
@@ -120,7 +126,8 @@ mod tests {
             prev_hash: header1.hash(),
             merkle_root: Hash256::decode(
                 "6677889900667788990066778899006677889900667788990066778899006677",
-            ).unwrap(),
+            )
+            .unwrap(),
             timestamp: 77,
             bits: 5599,
             nonce: 1111,

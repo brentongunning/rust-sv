@@ -1,8 +1,8 @@
+use crate::util::{Result, Serializable};
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io;
 use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv6Addr};
-use crate::util::{Result, Serializable};
 
 /// Network address for a node on the network
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]

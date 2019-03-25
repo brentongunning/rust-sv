@@ -1,8 +1,8 @@
-use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::messages::message::Payload;
+use crate::util::{Result, Serializable};
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{Result, Serializable};
 
 /// Specifies whether compact blocks are supported
 #[derive(Debug, Default, PartialEq, Eq, Hash, Clone)]

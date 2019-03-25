@@ -1,9 +1,9 @@
 use crate::messages::message::Payload;
 use crate::messages::node_addr_ex::NodeAddrEx;
+use crate::util::{var_int, Error, Result, Serializable};
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{var_int, Error, Result, Serializable};
 
 /// Maximum number of addresses allowed in an Addr message
 const MAX_ADDR_COUNT: u64 = 1000;
@@ -58,8 +58,8 @@ impl fmt::Debug for Addr {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hex;
     use crate::messages::NodeAddr;
+    use hex;
     use std::io::Cursor;
     use std::net::Ipv6Addr;
 
@@ -67,7 +67,8 @@ mod tests {
     fn read_bytes() {
         let b = hex::decode(
             "013c93dd5a250000000000000000000000000000000000ffff43cdb3a1479d".as_bytes(),
-        ).unwrap();
+        )
+        .unwrap();
         let a = Addr::read(&mut Cursor::new(&b)).unwrap();
         assert!(a.addrs.len() == 1);
         assert!(a.addrs[0].last_connected_time == 1524470588);

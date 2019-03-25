@@ -1,9 +1,9 @@
-use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::messages::message::Payload;
 use crate::messages::version::MIN_SUPPORTED_PROTOCOL_VERSION;
+use crate::util::{var_int, Error, Hash256, Result, Serializable};
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{var_int, Error, Hash256, Result, Serializable};
 
 /// Return results until either there are 2000 for getheaders or 500 or getblocks, or no more left
 pub const NO_HASH_STOP: Hash256 = Hash256([0; 32]);
@@ -82,7 +82,8 @@ mod tests {
             ],
             hash_stop: Hash256::decode(
                 "1122334455112233445511223344551122334455112233445511223344551122",
-            ).unwrap(),
+            )
+            .unwrap(),
         };
         p.write(&mut v).unwrap();
         assert!(v.len() == p.size());

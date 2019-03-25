@@ -1,10 +1,10 @@
-use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::messages::message::Payload;
 use crate::messages::node_addr::NodeAddr;
+use crate::util::{secs_since, var_int, Error, Result, Serializable};
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io;
 use std::io::{Read, Write};
 use std::time::UNIX_EPOCH;
-use crate::util::{secs_since, var_int, Error, Result, Serializable};
 
 /// Protocol version supported by this library
 pub const PROTOCOL_VERSION: u32 = 70015;
