@@ -1,5 +1,6 @@
-use byteorder::{BigEndian, WriteBytesExt};
 use crate::network::Network;
+use crate::util::{hash160, sha256d, Error, Result, Serializable};
+use byteorder::{BigEndian, WriteBytesExt};
 use ring::digest::SHA512;
 use ring::hmac;
 use rust_base58::base58::{FromBase58, ToBase58};
@@ -8,7 +9,6 @@ use std::fmt;
 use std::io;
 use std::io::{Cursor, Read, Write};
 use std::slice;
-use crate::util::{hash160, sha256d, Error, Result, Serializable};
 
 /// Maximum private key value (exclusive)
 const SECP256K1_CURVE_ORDER: [u8; 32] = [

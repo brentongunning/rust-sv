@@ -1,7 +1,7 @@
 use crate::messages::Tx;
-use secp256k1::{Message, PublicKey, Secp256k1, Signature};
 use crate::transaction::sighash::{sighash, SigHashCache, SIGHASH_FORKID};
 use crate::util::{Amount, Error, Result};
+use secp256k1::{Message, PublicKey, Secp256k1, Signature};
 
 /// Locktimes greater than or equal to this are interpreted as timestamps. Less then, block heights.
 const LOCKTIME_THRESHOLD: i32 = 500000000;
@@ -140,12 +140,12 @@ mod tests {
     use crate::messages::{OutPoint, TxIn, TxOut};
     use crate::script::op_codes::*;
     use crate::script::Script;
-    use secp256k1::{PublicKey, Secp256k1, SecretKey};
     use crate::transaction::generate_signature;
     use crate::transaction::sighash::{
         SIGHASH_ALL, SIGHASH_ANYONECANPAY, SIGHASH_FORKID, SIGHASH_NONE, SIGHASH_SINGLE,
     };
     use crate::util::{hash160, Hash256};
+    use secp256k1::{PublicKey, Secp256k1, SecretKey};
 
     #[test]
     fn standard_p2pkh() {

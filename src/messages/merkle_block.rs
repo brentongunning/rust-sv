@@ -1,11 +1,11 @@
-use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
-use hex;
 use crate::messages::block_header::BlockHeader;
 use crate::messages::message::Payload;
+use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use hex;
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
 
 /// A block header and partial merkle tree for SPV nodes to validate transactions
 #[derive(Default, PartialEq, Eq, Hash, Clone)]
@@ -237,10 +237,12 @@ mod tests {
                 version: 12345,
                 prev_hash: Hash256::decode(
                     "7766009988776600998877660099887766009988776600998877660099887766",
-                ).unwrap(),
+                )
+                .unwrap(),
                 merkle_root: Hash256::decode(
                     "2211554433221155443322115544332211554433221155443322115544332211",
-                ).unwrap(),
+                )
+                .unwrap(),
                 timestamp: 66,
                 bits: 4488,
                 nonce: 9999,

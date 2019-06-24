@@ -1,10 +1,10 @@
-use linked_hash_map::LinkedHashMap;
 use crate::messages::{BlockHeader, OutPoint, Payload, Tx, TxOut};
+use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
+use linked_hash_map::LinkedHashMap;
 use std::collections::{HashSet, VecDeque};
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
 
 /// Block height that Bitcoin Cash forked from BTC
 pub const BITCOIN_CASH_FORK_HEIGHT: i32 = 478558;
@@ -158,53 +158,56 @@ impl fmt::Debug for Block {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hex;
     use crate::messages::{OutPoint, TxIn, TxOut};
     use crate::script::Script;
-    use std::io::Cursor;
     use crate::util::{Amount, Hash256};
+    use hex;
+    use std::io::Cursor;
 
     #[test]
     fn read_bytes() {
         let b = hex::decode("010000004860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000000d5fdcc541e25de1c7a5addedf24858b8bb665c9f36ef744ee42c316022c90f9bb0bc6649ffff001d08d2bd610101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d010bffffffff0100f2052a010000004341047211a824f55b505228e4c3d5194c1fcfaa15a456abdf37f9b9d97a4040afc073dee6c89064984f03385237d92167c13e236446b417ab79a0fcae412ae3316b77ac00000000").unwrap();
         let block = Block::read(&mut Cursor::new(&b)).unwrap();
         assert!(
-            block == Block {
-                header: BlockHeader {
-                    version: 1,
-                    prev_hash: Hash256::decode(
-                        "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048",
-                    ).unwrap(),
-                    merkle_root: Hash256::decode(
-                        "9b0fc92260312ce44e74ef369f5c66bbb85848f2eddd5a7a1cde251e54ccfdd5",
-                    ).unwrap(),
-                    timestamp: 1231469744,
-                    bits: 486604799,
-                    nonce: 1639830024,
-                },
-                txns: vec![Tx {
-                    version: 1,
-                    inputs: vec![TxIn {
-                        prev_output: OutPoint {
-                            hash: Hash256([0; 32]),
-                            index: 4294967295,
-                        },
-                        sig_script: Script(vec![4, 255, 255, 0, 29, 1, 11]),
-                        sequence: 4294967295,
+            block
+                == Block {
+                    header: BlockHeader {
+                        version: 1,
+                        prev_hash: Hash256::decode(
+                            "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048",
+                        )
+                        .unwrap(),
+                        merkle_root: Hash256::decode(
+                            "9b0fc92260312ce44e74ef369f5c66bbb85848f2eddd5a7a1cde251e54ccfdd5",
+                        )
+                        .unwrap(),
+                        timestamp: 1231469744,
+                        bits: 486604799,
+                        nonce: 1639830024,
+                    },
+                    txns: vec![Tx {
+                        version: 1,
+                        inputs: vec![TxIn {
+                            prev_output: OutPoint {
+                                hash: Hash256([0; 32]),
+                                index: 4294967295,
+                            },
+                            sig_script: Script(vec![4, 255, 255, 0, 29, 1, 11]),
+                            sequence: 4294967295,
+                        }],
+                        outputs: vec![TxOut {
+                            amount: Amount(5000000000),
+                            pk_script: Script(vec![
+                                65, 4, 114, 17, 168, 36, 245, 91, 80, 82, 40, 228, 195, 213, 25,
+                                76, 31, 207, 170, 21, 164, 86, 171, 223, 55, 249, 185, 217, 122,
+                                64, 64, 175, 192, 115, 222, 230, 200, 144, 100, 152, 79, 3, 56, 82,
+                                55, 217, 33, 103, 193, 62, 35, 100, 70, 180, 23, 171, 121, 160,
+                                252, 174, 65, 42, 227, 49, 107, 119, 172,
+                            ]),
+                        }],
+                        lock_time: 0,
                     }],
-                    outputs: vec![TxOut {
-                        amount: Amount(5000000000),
-                        pk_script: Script(vec![
-                            65, 4, 114, 17, 168, 36, 245, 91, 80, 82, 40, 228, 195, 213, 25, 76,
-                            31, 207, 170, 21, 164, 86, 171, 223, 55, 249, 185, 217, 122, 64, 64,
-                            175, 192, 115, 222, 230, 200, 144, 100, 152, 79, 3, 56, 82, 55, 217,
-                            33, 103, 193, 62, 35, 100, 70, 180, 23, 171, 121, 160, 252, 174, 65,
-                            42, 227, 49, 107, 119, 172,
-                        ]),
-                    }],
-                    lock_time: 0,
-                }],
-            }
+                }
         );
     }
 
@@ -216,10 +219,12 @@ mod tests {
                 version: 77,
                 prev_hash: Hash256::decode(
                     "abcdabcdabcdabcd1234123412341234abcdabcdabcdabcd1234123412341234",
-                ).unwrap(),
+                )
+                .unwrap(),
                 merkle_root: Hash256::decode(
                     "1234567809876543123456780987654312345678098765431234567809876543",
-                ).unwrap(),
+                )
+                .unwrap(),
                 timestamp: 7,
                 bits: 8,
                 nonce: 9,

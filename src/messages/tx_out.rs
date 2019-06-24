@@ -1,8 +1,8 @@
-use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use crate::script::Script;
+use crate::util::{var_int, Amount, Result, Serializable};
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{var_int, Amount, Result, Serializable};
 
 /// Transaction output
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]

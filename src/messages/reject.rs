@@ -1,9 +1,9 @@
-use byteorder::{ReadBytesExt, WriteBytesExt};
 use crate::messages::message::Payload;
+use crate::util::{var_int, Error, Hash256, Result, Serializable};
+use byteorder::{ReadBytesExt, WriteBytesExt};
 use std::fmt;
 use std::io;
 use std::io::{Cursor, Read, Write};
-use crate::util::{var_int, Error, Hash256, Result, Serializable};
 
 // Message rejection error codes
 pub const REJECT_MALFORMED: u8 = 0x01;

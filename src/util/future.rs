@@ -1,8 +1,8 @@
+use crate::util::latch::Latch;
 use std::fmt;
 use std::mem::swap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use crate::util::latch::Latch;
 
 /// A promise for a value in the future
 pub struct Future<T> {

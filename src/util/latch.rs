@@ -1,7 +1,7 @@
+use crate::util::{Error, Result};
 use std::fmt;
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::Duration;
-use crate::util::{Error, Result};
 
 /// A one-way latch for thread synchronization
 ///

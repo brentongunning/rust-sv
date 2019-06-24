@@ -1,7 +1,7 @@
+use crate::util::{Hash256, Result, Serializable};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{Hash256, Result, Serializable};
 
 // Inventory vector types
 

@@ -1,9 +1,9 @@
-use hex;
 use crate::messages::message::Payload;
+use crate::util::{var_int, Error, Result, Serializable};
+use hex;
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{var_int, Error, Result, Serializable};
 
 /// Maximum size of a data element in the FilterAdd message
 pub const MAX_FILTER_ADD_DATA_SIZE: usize = 520;
@@ -63,7 +63,8 @@ mod tests {
     fn read_bytes() {
         let b = hex::decode(
             "20fdacf9b3eb077412e7a968d2e4f11b9a9dee312d666187ed77ee7d26af16cb0b".as_bytes(),
-        ).unwrap();
+        )
+        .unwrap();
         let f = FilterAdd::read(&mut Cursor::new(&b)).unwrap();
         assert!(f.data.len() == 32);
     }

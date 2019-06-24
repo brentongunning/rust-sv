@@ -1,8 +1,8 @@
+use crate::util::{sha256d, Error, Hash256, Result, Serializable};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use std::cmp::min;
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{sha256d, Error, Hash256, Result, Serializable};
 
 /// Block header
 #[derive(Debug, Default, PartialEq, Eq, Hash, Clone)]
@@ -120,10 +120,12 @@ mod tests {
             version: 12345,
             prev_hash: Hash256::decode(
                 "7766009988776600998877660099887766009988776600998877660099887766",
-            ).unwrap(),
+            )
+            .unwrap(),
             merkle_root: Hash256::decode(
                 "2211554433221155443322115544332211554433221155443322115544332211",
-            ).unwrap(),
+            )
+            .unwrap(),
             timestamp: 66,
             bits: 4488,
             nonce: 9999,
@@ -139,10 +141,12 @@ mod tests {
             version: 0x00000001,
             prev_hash: Hash256::decode(
                 "00000000000008a3a41b85b8b29ad444def299fee21793cd8b9e567eab02cd81",
-            ).unwrap(),
+            )
+            .unwrap(),
             merkle_root: Hash256::decode(
                 "2b12fcf1b09288fcaff797d71e950e71ae42b91e8bdb2304758dfcffc2b620e3",
-            ).unwrap(),
+            )
+            .unwrap(),
             timestamp: 0x4dd7f5c7,
             bits: 0x1a44b9f2,
             nonce: 0x9546a142,
@@ -171,7 +175,8 @@ mod tests {
             prev_hash,
             merkle_root: Hash256::decode(
                 "2b12fcf1b09288fcaff797d71e950e71ae42b91e8bdb2304758dfcffc2b620e3",
-            ).unwrap(),
+            )
+            .unwrap(),
             timestamp: 0x4dd7f5c7,
             bits: 0x1a44b9f2,
             nonce: 0x9546a142,

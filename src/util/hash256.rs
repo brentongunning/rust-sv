@@ -1,10 +1,10 @@
+use crate::util::{Error, Result, Serializable};
 use hex;
 use ring::digest::{digest, SHA256};
 use std::cmp::Ordering;
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-use crate::util::{Error, Result, Serializable};
 
 /// 256-bit hash for blocks and transactions
 ///
