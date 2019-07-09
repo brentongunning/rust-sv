@@ -134,6 +134,8 @@ pub const OP_SIZE: u8 = 130;
 // Bitwise Logic
 // --------------------------------------------------------------------------------------------
 
+/// Flips all of the bits in the input
+pub(crate) const OP_INVERT: u8 = 131;
 /// Boolean and between each bit in the inputs
 pub const OP_AND: u8 = 132;
 /// Boolean or between each bit in the inputs
@@ -165,10 +167,16 @@ pub const OP_0NOTEQUAL: u8 = 146;
 pub const OP_ADD: u8 = 147;
 /// Subtracts b from a
 pub const OP_SUB: u8 = 148;
+/// Multiplies a by b
+pub(crate) const OP_MUL: u8 = 149;
 /// Divides a by b
 pub const OP_DIV: u8 = 150;
 /// Returns the remainder after dividing a by b
 pub const OP_MOD: u8 = 151;
+/// Shifts a left b bits, preserving sign
+pub(crate) const OP_LSHIFT: u8 = 152;
+/// Shifts a right b bits, preserving sign
+pub(crate) const OP_RSHIFT: u8 = 153;
 /// If both a and b are not empty, the output is 1. Otherwise, 0.
 pub const OP_BOOLAND: u8 = 154;
 /// If a or b is not empty, the output is 1. Otherwise, 0.
@@ -283,15 +291,7 @@ pub(crate) const OP_INVALID_ABOVE: u8 = 186;
 // Disabled words
 // --------------------------------------------------------------------------------------------
 
-/// Flips all of the bits in the input
-pub(crate) const OP_INVERT: u8 = 131;
 /// The input is multiplied by 2
 pub(crate) const OP_2MUL: u8 = 141;
 /// The input is divided by 2
 pub(crate) const OP_2DIV: u8 = 142;
-/// Multiplies a by b
-pub(crate) const OP_MUL: u8 = 149;
-/// Shifts a left b bits, preserving sign
-pub(crate) const OP_LSHIFT: u8 = 152;
-/// Shifts a right b bits, preserving sign
-pub(crate) const OP_RSHIFT: u8 = 153;
