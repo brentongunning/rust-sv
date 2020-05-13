@@ -43,16 +43,7 @@ pub fn pop_bigint(stack: &mut Vec<Vec<u8>>) -> Result<BigInt> {
         return Err(Error::ScriptError(msg));
     }
     let mut top = stack.pop().unwrap();
-    let len = top.len();
-    if top.len() == 0 {
-        return Ok(BigInt::zero());
-    }
-    let mut sign = Sign::Plus;
-    if top[len - 1] & 0x80 == 0x80 {
-        sign = Sign::Minus;
-    }
-    top[len - 1] &= !0x80;
-    Ok(BigInt::from_bytes_le(sign, &top))
+    Ok(decode_bigint(&mut top))
 }
 
 /// Converts a stack item to a bool
@@ -134,7 +125,22 @@ pub fn encode_num(val: i64) -> Result<Vec<u8>> {
     }
 }
 
-/// Converts a number to a 32-bit stack item
+/// Converts a stack item to a big int number
+#[inline]
+pub fn decode_bigint(s: &mut [u8]) -> BigInt {
+    let len = s.len();
+    if s.len() == 0 {
+        return BigInt::zero();
+    }
+    let mut sign = Sign::Plus;
+    if s[len - 1] & 0x80 == 0x80 {
+        sign = Sign::Minus;
+    }
+    s[len - 1] &= !0x80;
+    BigInt::from_bytes_le(sign, &s)
+}
+
+/// Converts a big int number to a stack item
 #[inline]
 pub fn encode_bigint(val: BigInt) -> Vec<u8> {
     let mut result = val.to_bytes_le();

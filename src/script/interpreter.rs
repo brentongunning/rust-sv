@@ -1,14 +1,14 @@
 use crate::script::op_codes::*;
 use crate::script::stack::{
-    decode_bool, decode_num, encode_bigint, encode_num, encode_num_overflow, pop_bigint, pop_bool,
-    pop_num,
+    decode_bigint, decode_bool, encode_bigint, encode_num, encode_num_overflow, pop_bigint,
+    pop_bool, pop_num,
 };
 use crate::script::Checker;
 use crate::transaction::sighash::SIGHASH_FORKID;
 use crate::util::{hash160, lshift, rshift, sha256d, Error, Result};
 use digest::{FixedOutput, Input};
 use num_bigint::BigInt;
-use num_traits::Zero;
+use num_traits::{One, ToPrimitive, Zero};
 use ring::digest::{digest, SHA1, SHA256};
 use ripemd160::{Digest, Ripemd160};
 
@@ -555,24 +555,28 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
             }
             OP_NUM2BIN => {
                 check_stack_size(2, &stack)?;
-                let m = pop_num(&mut stack)?;
+                let m = pop_bigint(&mut stack)?;
                 let mut n = stack.pop().unwrap();
-                if m < 1 {
+                if m < BigInt::one() {
                     let msg = format!("OP_NUM2BIN failed. m too small: {}", m);
                     return Err(Error::ScriptError(msg));
                 }
                 let nlen = n.len();
-                if m < nlen as i32 {
+                if m < BigInt::from(nlen) {
                     let msg = "OP_NUM2BIN failed. n longer than m".to_string();
                     return Err(Error::ScriptError(msg));
                 }
-                let mut v = Vec::with_capacity(m as usize);
+                if m > BigInt::from(2147483647) {
+                    let msg = "OP_NUM2BIN failed. m too big".to_string();
+                    return Err(Error::ScriptError(msg));
+                }
+                let mut v = Vec::with_capacity(m.to_usize().unwrap());
                 let mut neg = 0;
                 if nlen > 0 {
                     neg = n[nlen - 1] & 128;
                     n[nlen - 1] &= 127;
                 }
-                for _ in n.len()..m as usize {
+                for _ in n.len()..m.to_usize().unwrap() {
                     v.push(0);
                 }
                 for b in n.iter().rev() {
@@ -585,8 +589,8 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 check_stack_size(1, &stack)?;
                 let mut v = stack.pop().unwrap();
                 v.reverse();
-                let n = decode_num(&v)?;
-                let e = encode_num(n)?;
+                let n = decode_bigint(&mut v);
+                let e = encode_bigint(n);
                 stack.push(e);
             }
             OP_RIPEMD160 => {
@@ -1083,10 +1087,12 @@ mod tests {
         pass(&[OP_PUSH + 9, 0, 0, 0, 0, 0, 0, 0, 0, 1, OP_BIN2NUM]);
         pass(&[OP_PUSH + 4, 128, 0, 0, 1, OP_BIN2NUM, OP_1NEGATE, OP_EQUAL]);
         pass(&[OP_PUSH + 7, 0, 0, 0, 0, 0, 0, 0, OP_BIN2NUM, OP_0, OP_EQUAL]);
+        pass(&[OP_PUSH + 5, 129, 0, 0, 0, 0, OP_BIN2NUM]);
         pass(&[OP_1, OP_16, OP_NUM2BIN]);
         pass(&[OP_0, OP_4, OP_NUM2BIN, OP_0, OP_NUMEQUAL]);
         pass(&[OP_1, OP_DUP, OP_16, OP_NUM2BIN, OP_BIN2NUM, OP_EQUAL]);
         pass(&[OP_1NEGATE, OP_DUP, OP_16, OP_NUM2BIN, OP_BIN2NUM, OP_EQUAL]);
+        pass(&[OP_1, OP_PUSH + 5, 129, 0, 0, 0, 0, OP_NUM2BIN]);
         let mut v = Vec::new();
         v.push(OP_1);
         v.push(OP_PUSH + 2);
@@ -1354,12 +1360,10 @@ mod tests {
         fail(&[OP_0, OP_1, OP_2, OP_WITHIN]);
         fail(&[OP_0, OP_1NEGATE, OP_0, OP_WITHIN]);
         fail(&[OP_BIN2NUM]);
-        fail(&[OP_PUSH + 5, 129, 0, 0, 0, 0, OP_BIN2NUM]);
         fail(&[OP_NUM2BIN]);
         fail(&[OP_1, OP_NUM2BIN]);
         fail(&[OP_1, OP_0, OP_NUM2BIN]);
         fail(&[OP_1, OP_1NEGATE, OP_NUM2BIN]);
-        fail(&[OP_1, OP_PUSH + 5, 129, 0, 0, 0, 0, OP_NUM2BIN]);
         fail(&[OP_PUSH + 5, 129, 0, 0, 0, 0, OP_1, OP_NUM2BIN]);
         fail(&[OP_RIPEMD160]);
         fail(&[OP_SHA1]);
