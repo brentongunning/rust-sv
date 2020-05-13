@@ -213,7 +213,7 @@ impl fmt::Debug for Tx {
 mod tests {
     use super::*;
     use crate::messages::OutPoint;
-    use crate::util::{Hash256};
+    use crate::util::Hash256;
     use std::io::Cursor;
 
     #[test]

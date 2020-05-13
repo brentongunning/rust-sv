@@ -6,7 +6,7 @@ use std::fmt;
 use std::io;
 use std::io::{Read, Write};
 
-/// Block height that Bitcoin Cash forked from BTC
+/// Block height that BCH and BTC forked on mainnet
 pub const BITCOIN_CASH_FORK_HEIGHT: i32 = 478558;
 
 /// Block of transactions
@@ -160,7 +160,7 @@ mod tests {
     use super::*;
     use crate::messages::{OutPoint, TxIn, TxOut};
     use crate::script::Script;
-    use crate::util::{Hash256};
+    use crate::util::Hash256;
     use hex;
     use std::io::Cursor;
 

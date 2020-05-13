@@ -290,15 +290,8 @@ mod tests {
         };
         let mut cache = SigHashCache::new();
         let sighash_type = SIGHASH_ALL | SIGHASH_FORKID;
-        let sighash = bip143_sighash(
-            &tx,
-            0,
-            &pk_script,
-            260000000,
-            sighash_type,
-            &mut cache,
-        )
-        .unwrap();
+        let sighash =
+            bip143_sighash(&tx, 0, &pk_script, 260000000, sighash_type, &mut cache).unwrap();
         let expected = "1e2121837829018daf3aeadab76f1a542c49a3600ded7bd74323ee74ce0d840c";
         assert!(sighash.0.to_vec() == hex::decode(expected).unwrap());
         assert!(cache.hash_prevouts.is_some());

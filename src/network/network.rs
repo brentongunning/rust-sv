@@ -165,9 +165,7 @@ impl Network {
                 "testnet-seed.cascharia.com".to_string(),
                 "testnet-seed.bitcoincloud.net".to_string(),
             ],
-            Network::STN => vec![
-                "stn-seed.bitcoinsv.io".to_string(),
-            ],
+            Network::STN => vec!["stn-seed.bitcoinsv.io".to_string()],
         }
     }
 
