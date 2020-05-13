@@ -5,6 +5,7 @@ use crate::transaction::sighash::SigHashCache;
 use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use linked_hash_map::LinkedHashMap;
+use op_codes::{OP_EQUAL, OP_HASH160};
 use std::collections::HashSet;
 use std::fmt;
 use std::io;
@@ -125,6 +126,17 @@ impl Tx {
             };
 
             script.eval(&mut tx_checker, flags)?;
+        }
+
+        if use_genesis_rules {
+            for tx_out in self.outputs.iter() {
+                if tx_out.pk_script.0.len() == 22
+                    && tx_out.pk_script.0[0] == OP_HASH160
+                    && tx_out.pk_script.0[21] == OP_EQUAL
+                {
+                    return Err(Error::BadData("P2SH sunsetted".to_string()));
+                }
+            }
         }
 
         Ok(())
@@ -413,6 +425,17 @@ mod tests {
         utxos_clone.get_mut(prev_output).unwrap().pk_script = Script(vec![op_codes::OP_0]);
         assert!(tx
             .validate(true, true, &utxos_clone, &HashSet::new())
+            .is_err());
+
+        let mut tx_test = tx.clone();
+        tx_test.outputs[0].pk_script = Script(vec![
+            OP_HASH160, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, OP_EQUAL,
+        ]);
+        assert!(tx_test
+            .validate(true, false, &utxos, &HashSet::new())
+            .is_ok());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
             .is_err());
     }
 }
