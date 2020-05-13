@@ -14,10 +14,11 @@ Features
 * Wallet key derivation and mnemonic parsing
 * Mainnet and testnet support
 * Various Bitcoin primitives
+* Genesis upgrade support
 
 # Installation
 
-Add ```sv = "0.1"``` to Cargo.toml
+Add ```sv = "0.2"``` to Cargo.toml
 
 # Known limitations
 

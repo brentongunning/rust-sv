@@ -1,6 +1,6 @@
 [package]
 name = "sv"
-version = "0.1.11"
+version = "0.2.0"
 description = "A Rust library for working with Bitcoin SV"
 repository = "https://github.com/brentongunning/rust-sv"
 authors = ["Brenton Gunning <brentongunning@gmail.com>"]
