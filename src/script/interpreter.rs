@@ -1,7 +1,6 @@
 use crate::script::op_codes::*;
 use crate::script::stack::{
-    decode_bigint, decode_bool, encode_bigint, encode_num, encode_num_overflow, pop_bigint,
-    pop_bool, pop_num,
+    decode_bigint, decode_bool, encode_bigint, encode_num, pop_bigint, pop_bool, pop_num,
 };
 use crate::script::Checker;
 use crate::transaction::sighash::SIGHASH_FORKID;
@@ -368,44 +367,44 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 }
             }
             OP_1ADD => {
-                let mut x = pop_num(&mut stack)? as i64;
+                let mut x = pop_bigint(&mut stack)?;
                 x += 1;
-                stack.push(encode_num_overflow(x)?);
+                stack.push(encode_bigint(x));
             }
             OP_1SUB => {
-                let mut x = pop_num(&mut stack)? as i64;
+                let mut x = pop_bigint(&mut stack)?;
                 x -= 1;
-                stack.push(encode_num_overflow(x)?);
+                stack.push(encode_bigint(x));
             }
             OP_NEGATE => {
-                let mut x = pop_num(&mut stack)? as i64;
+                let mut x = pop_bigint(&mut stack)?;
                 x = -x;
-                stack.push(encode_num(x)?);
+                stack.push(encode_bigint(x));
             }
             OP_ABS => {
-                let mut x = pop_num(&mut stack)? as i64;
-                if x < 0 {
+                let mut x = pop_bigint(&mut stack)?;
+                if x < BigInt::zero() {
                     x = -x;
                 }
-                stack.push(encode_num(x)?);
+                stack.push(encode_bigint(x));
             }
             OP_NOT => {
-                let mut x = pop_num(&mut stack)? as i64;
-                if x == 0 {
-                    x = 1;
+                let mut x = pop_bigint(&mut stack)?;
+                if x == BigInt::zero() {
+                    x = BigInt::one();
                 } else {
-                    x = 0;
+                    x = BigInt::zero();
                 }
-                stack.push(encode_num(x)?);
+                stack.push(encode_bigint(x));
             }
             OP_0NOTEQUAL => {
-                let mut x = pop_num(&mut stack)? as i64;
-                if x == 0 {
-                    x = 0;
+                let mut x = pop_bigint(&mut stack)?;
+                if x == BigInt::zero() {
+                    x = BigInt::zero();
                 } else {
-                    x = 1;
+                    x = BigInt::one();
                 }
-                stack.push(encode_num(x)?);
+                stack.push(encode_bigint(x));
             }
             OP_ADD => {
                 let b = pop_bigint(&mut stack)?;
@@ -1007,6 +1006,12 @@ mod tests {
         pass(&[OP_1, OP_0NOTEQUAL]);
         pass(&[OP_0, OP_0NOTEQUAL, OP_0, OP_EQUAL]);
         pass(&[OP_2, OP_0NOTEQUAL]);
+        pass(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_1ADD]);
+        pass(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_1SUB]);
+        pass(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_NEGATE, OP_1]);
+        pass(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_ABS, OP_1]);
+        pass(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_NOT]);
+        pass(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_0NOTEQUAL, OP_1]);
         pass(&[OP_0, OP_1, OP_ADD]);
         pass(&[OP_1, OP_0, OP_ADD]);
         pass(&[OP_1, OP_2, OP_ADD, OP_3, OP_EQUAL]);
@@ -1284,17 +1289,11 @@ mod tests {
         fail(&[OP_1, OP_0, OP_EQUAL]);
         fail(&[OP_1, OP_0, OP_EQUALVERIFY, OP_1]);
         fail(&[OP_1ADD]);
-        fail(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_1ADD]);
         fail(&[OP_1SUB]);
-        fail(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_1SUB]);
         fail(&[OP_NEGATE]);
-        fail(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_NEGATE]);
         fail(&[OP_ABS]);
-        fail(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_ABS]);
         fail(&[OP_NOT]);
-        fail(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_NOT]);
         fail(&[OP_0NOTEQUAL]);
-        fail(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_0NOTEQUAL]);
         fail(&[OP_ADD]);
         fail(&[OP_1, OP_ADD]);
         fail(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_ADD]);

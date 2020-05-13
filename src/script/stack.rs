@@ -159,27 +159,6 @@ pub fn encode_bigint(val: BigInt) -> Vec<u8> {
     result.1
 }
 
-/// Converts a number to a stack item, allowing for overflow to 5 bytes
-#[inline]
-pub fn encode_num_overflow(val: i64) -> Result<Vec<u8>> {
-    // Range: [-2^31+1 -2^31+1, 2^31-1 + 2^31-1]
-    if val > 4294967294 || val < -4294967294 {
-        return Err(Error::ScriptError("Number out of range".to_string()));
-    }
-    let (posval, negmask) = if val < 0 { (-val, 128) } else { (val, 0) };
-    if posval <= 2147483647 {
-        encode_num(val)
-    } else {
-        Ok(vec![
-            (posval >> 0) as u8,
-            (posval >> 8) as u8,
-            (posval >> 16) as u8,
-            (posval >> 24) as u8,
-            ((posval >> 32) as u8) | negmask,
-        ])
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -215,10 +194,6 @@ mod tests {
         assert!(encode_num(-2147483647).is_ok());
         assert!(encode_num(2147483648).is_err());
         assert!(encode_num(-2147483648).is_err());
-        assert!(encode_num_overflow(4294967294).is_ok());
-        assert!(encode_num_overflow(-4294967294).is_ok());
-        assert!(encode_num_overflow(4294967295).is_err());
-        assert!(encode_num_overflow(-4294967295).is_err());
         // Encode decode
         assert!(decode_num(&encode_num(0).unwrap()).unwrap() == 0);
         assert!(decode_num(&encode_num(1).unwrap()).unwrap() == 1);
@@ -229,38 +204,6 @@ mod tests {
         assert!(decode_num(&encode_num(-111111).unwrap()).unwrap() == -111111);
         assert!(decode_num(&encode_num(2147483647).unwrap()).unwrap() == 2147483647);
         assert!(decode_num(&encode_num(-2147483647).unwrap()).unwrap() == -2147483647);
-        // Encode decode with overflow
-        assert!(decode_num(&encode_num_overflow(0).unwrap()).unwrap() == 0);
-        assert!(decode_num(&encode_num_overflow(1).unwrap()).unwrap() == 1);
-        assert!(decode_num(&encode_num_overflow(-1).unwrap()).unwrap() == -1);
-        assert!(decode_num(&encode_num_overflow(1111).unwrap()).unwrap() == 1111);
-        assert!(decode_num(&encode_num_overflow(-1111).unwrap()).unwrap() == -1111);
-        assert!(decode_num(&encode_num_overflow(111111).unwrap()).unwrap() == 111111);
-        assert!(decode_num(&encode_num_overflow(-111111).unwrap()).unwrap() == -111111);
-        assert!(decode_num(&encode_num_overflow(2147483647).unwrap()).unwrap() == 2147483647);
-        assert!(decode_num(&encode_num_overflow(-2147483647).unwrap()).unwrap() == -2147483647);
-        assert!(decode_num(&encode_num_overflow(4294967294).unwrap()).unwrap() == 4294967294);
-        assert!(decode_num(&encode_num_overflow(-4294967294).unwrap()).unwrap() == -4294967294);
-        // Minimum lengths
-        assert!(encode_num_overflow(0).unwrap().len() == 0);
-        assert!(encode_num_overflow(1).unwrap().len() == 1);
-        assert!(encode_num_overflow(-1).unwrap().len() == 1);
-        assert!(encode_num_overflow(127).unwrap().len() == 1);
-        assert!(encode_num_overflow(-127).unwrap().len() == 1);
-        assert!(encode_num_overflow(128).unwrap().len() == 2);
-        assert!(encode_num_overflow(-128).unwrap().len() == 2);
-        assert!(encode_num_overflow(32767).unwrap().len() == 2);
-        assert!(encode_num_overflow(-32767).unwrap().len() == 2);
-        assert!(encode_num_overflow(32768).unwrap().len() == 3);
-        assert!(encode_num_overflow(-32768).unwrap().len() == 3);
-        assert!(encode_num_overflow(8388607).unwrap().len() == 3);
-        assert!(encode_num_overflow(-8388607).unwrap().len() == 3);
-        assert!(encode_num_overflow(8388608).unwrap().len() == 4);
-        assert!(encode_num_overflow(-8388608).unwrap().len() == 4);
-        assert!(encode_num_overflow(2147483647).unwrap().len() == 4);
-        assert!(encode_num_overflow(-2147483647).unwrap().len() == 4);
-        assert!(encode_num_overflow(2147483648).unwrap().len() == 5);
-        assert!(encode_num_overflow(-2147483648).unwrap().len() == 5);
     }
 
     #[test]
