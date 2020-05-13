@@ -35,7 +35,7 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
         return Err(Error::ScriptError("Script too long".to_string()));
     }
 
-    while i < script.len() {
+    'outer: while i < script.len() {
         if branch_exec.len() > 0 && !branch_exec[branch_exec.len() - 1] {
             i = skip_branch(script, i, &mut n_ops);
             if i >= script.len() {
@@ -126,7 +126,11 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 }
             }
             OP_RETURN => {
-                return Err(Error::ScriptError("Hit OP_RETURN".to_string()));
+                if flags & PREGENESIS_RULES == PREGENESIS_RULES {
+                    return Err(Error::ScriptError("Hit OP_RETURN".to_string()));
+                } else {
+                    break 'outer;
+                }
             }
             OP_TOALTSTACK => {
                 check_stack_size(1, &stack)?;
@@ -925,6 +929,8 @@ mod tests {
             OP_1, OP_IF, OP_ELSE, OP_ELSE, OP_ELSE, OP_ELSE, OP_1, OP_ENDIF,
         ]);
         pass(&[OP_1, OP_VERIFY, OP_1]);
+        pass(&[OP_1, OP_RETURN]);
+        pass(&[OP_FALSE, OP_TRUE, OP_RETURN]);
         pass(&[OP_1, OP_0, OP_TOALTSTACK]);
         pass(&[OP_1, OP_TOALTSTACK, OP_FROMALTSTACK]);
         pass(&[OP_1, OP_IFDUP, OP_DROP, OP_DROP, OP_1]);
@@ -1238,7 +1244,9 @@ mod tests {
         fail(&[OP_VERIFY]);
         fail(&[OP_0, OP_VERIFY]);
         fail(&[OP_RETURN]);
-        fail(&[OP_1, OP_RETURN, OP_1]);
+        fail(&[OP_FALSE, OP_RETURN]);
+        fail_pregenesis(&[OP_RETURN]);
+        fail_pregenesis(&[OP_1, OP_RETURN, OP_1]);
         fail(&[OP_TOALTSTACK]);
         fail(&[OP_FROMALTSTACK]);
         fail(&[OP_0, OP_TOALTSTACK, OP_1, OP_FROMALTSTACK]);
