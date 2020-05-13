@@ -26,7 +26,7 @@
 //!
 //! ```rust
 //! use sv::messages::{OutPoint, Tx, TxIn, TxOut};
-//! use sv::transaction::p2pkh::{create_pk_script, create_sig_script};
+//! use sv::transaction::p2pkh::{create_lock_script, create_unlock_script};
 //! use sv::util::{hash160, Hash256};
 //!
 //! // Use real values here
@@ -39,13 +39,13 @@
 //!
 //! let inputs = vec![TxIn {
 //!     prev_output,
-//!     sig_script: create_sig_script(&signature, &public_key),
+//!     unlock_script: create_unlock_script(&signature, &public_key),
 //!     sequence: 0,
 //! }];
 //!
 //! let outputs = vec![TxOut {
 //!     amount: 1000,
-//!     pk_script: create_pk_script(&hash160(&public_key)),
+//!     lock_script: create_lock_script(&hash160(&public_key)),
 //! }];
 //!
 //! let tx = Tx {

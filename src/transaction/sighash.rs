@@ -28,8 +28,8 @@ const FORK_ID: u32 = 0;
 ///
 /// * `tx` - Spending transaction
 /// * `n_input` - Spending input index
-/// * `script_code` - The pk_script of the output being spent. This may be a subset of the
-/// pk_script if OP_CODESEPARATOR is used.
+/// * `script_code` - The lock_script of the output being spent. This may be a subset of the
+/// lock_script if OP_CODESEPARATOR is used.
 /// * `amount` - The satoshi amount in the output being spent
 /// * `sighash_type` - Sighash flags
 /// * `cache` - Cache to store intermediate values for future sighash calls.
@@ -201,10 +201,10 @@ fn legacy_sighash(
         let i = if anyone_can_pay { n_input } else { i };
         let mut tx_in = tx.inputs[i].clone();
         if i == n_input {
-            tx_in.sig_script = Script(Vec::with_capacity(4 + sub_script.len()));
-            tx_in.sig_script.0.extend_from_slice(&sub_script);
+            tx_in.unlock_script = Script(Vec::with_capacity(4 + sub_script.len()));
+            tx_in.unlock_script.0.extend_from_slice(&sub_script);
         } else {
-            tx_in.sig_script = Script(vec![]);
+            tx_in.unlock_script = Script(vec![]);
             if base_type == SIGHASH_NONE || base_type == SIGHASH_SINGLE {
                 tx_in.sequence = 0;
             }
@@ -233,7 +233,7 @@ fn legacy_sighash(
         if i == n_input && base_type == SIGHASH_SINGLE {
             let empty = TxOut {
                 amount: -1,
-                pk_script: Script(vec![]),
+                lock_script: Script(vec![]),
             };
             empty.write(&mut s)?;
         } else {
@@ -260,7 +260,8 @@ mod tests {
 
     #[test]
     fn bip143_sighash_test() {
-        let pk_script = hex::decode("76a91402b74813b047606b4b3fbdfb1a6e8e053fdb8dab88ac").unwrap();
+        let lock_script =
+            hex::decode("76a91402b74813b047606b4b3fbdfb1a6e8e053fdb8dab88ac").unwrap();
         let addr = "mfmKD4cP6Na7T8D87XRSiR7shA1HNGSaec";
         let hash160 = addr_decode(addr, Network::Testnet).unwrap().0;
         let tx = Tx {
@@ -273,17 +274,17 @@ mod tests {
                     .unwrap(),
                     index: 0,
                 },
-                sig_script: Script(vec![]),
+                unlock_script: Script(vec![]),
                 sequence: 0,
             }],
             outputs: vec![
                 TxOut {
                     amount: 100,
-                    pk_script: p2pkh::create_pk_script(&hash160),
+                    lock_script: p2pkh::create_lock_script(&hash160),
                 },
                 TxOut {
                     amount: 259899900,
-                    pk_script: p2pkh::create_pk_script(&hash160),
+                    lock_script: p2pkh::create_lock_script(&hash160),
                 },
             ],
             lock_time: 0,
@@ -291,7 +292,7 @@ mod tests {
         let mut cache = SigHashCache::new();
         let sighash_type = SIGHASH_ALL | SIGHASH_FORKID;
         let sighash =
-            bip143_sighash(&tx, 0, &pk_script, 260000000, sighash_type, &mut cache).unwrap();
+            bip143_sighash(&tx, 0, &lock_script, 260000000, sighash_type, &mut cache).unwrap();
         let expected = "1e2121837829018daf3aeadab76f1a542c49a3600ded7bd74323ee74ce0d840c";
         assert!(sighash.0.to_vec() == hex::decode(expected).unwrap());
         assert!(cache.hash_prevouts.is_some());
@@ -301,7 +302,8 @@ mod tests {
 
     #[test]
     fn legacy_sighash_test() {
-        let pk_script = hex::decode("76a914d951eb562f1ff26b6cbe89f04eda365ea6bd95ce88ac").unwrap();
+        let lock_script =
+            hex::decode("76a914d951eb562f1ff26b6cbe89f04eda365ea6bd95ce88ac").unwrap();
         let tx = Tx {
             version: 1,
             inputs: vec![TxIn {
@@ -312,18 +314,18 @@ mod tests {
                     .unwrap(),
                     index: 0,
                 },
-                sig_script: Script(vec![]),
+                unlock_script: Script(vec![]),
                 sequence: 0xffffffff,
             }],
             outputs: vec![TxOut {
                 amount: 49990000,
-                pk_script: Script(
+                lock_script: Script(
                     hex::decode("76a9147865b0b301119fc3eadc7f3406ff1339908e46d488ac").unwrap(),
                 ),
             }],
             lock_time: 0,
         };
-        let sighash = legacy_sighash(&tx, 0, &pk_script, SIGHASH_ALL).unwrap();
+        let sighash = legacy_sighash(&tx, 0, &lock_script, SIGHASH_ALL).unwrap();
         let expected = "ad16084eccf26464a84c5ee2f8b96b4daff9a3154ac3c1b320346aed042abe57";
         assert!(sighash.0.to_vec() == hex::decode(expected).unwrap());
     }

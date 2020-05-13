@@ -7,7 +7,7 @@
 //! ```rust
 //! use sv::messages::{Tx, TxIn};
 //! use sv::transaction::generate_signature;
-//! use sv::transaction::p2pkh::{create_pk_script, create_sig_script};
+//! use sv::transaction::p2pkh::{create_lock_script, create_unlock_script};
 //! use sv::transaction::sighash::{sighash, SigHashCache, SIGHASH_FORKID, SIGHASH_NONE};
 //! use sv::util::{hash160};
 //!
@@ -21,12 +21,12 @@
 //! let private_key = [1; 32];
 //! let public_key = [1; 33];
 //!
-//! let pk_script = create_pk_script(&hash160(&public_key));
+//! let lock_script = create_lock_script(&hash160(&public_key));
 //! let mut cache = SigHashCache::new();
 //! let sighash_type = SIGHASH_NONE | SIGHASH_FORKID;
-//! let sighash = sighash(&tx, 0, &pk_script.0, 0, sighash_type, &mut cache).unwrap();
+//! let sighash = sighash(&tx, 0, &lock_script.0, 0, sighash_type, &mut cache).unwrap();
 //! let signature = generate_signature(&private_key, &sighash, sighash_type).unwrap();
-//! tx.inputs[0].sig_script = create_sig_script(&signature, &public_key);
+//! tx.inputs[0].unlock_script = create_unlock_script(&signature, &public_key);
 //! ```
 
 use crate::util::{Hash256, Result};

@@ -762,7 +762,7 @@ fn prefork(sig: &[u8]) -> bool {
     sig.len() > 0 && sig[sig.len() - 1] & SIGHASH_FORKID == 0
 }
 
-/// Removes any instances of the signature from the pk_script in pre-fork transactions
+/// Removes any instances of the signature from the lock_script in pre-fork transactions
 fn remove_sig<'a>(sig: &[u8], script: &[u8]) -> Vec<u8> {
     if sig.len() == 0 {
         return script.to_vec();

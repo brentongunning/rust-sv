@@ -214,12 +214,12 @@ mod tests {
                                 hash: Hash256([0; 32]),
                                 index: 4294967295,
                             },
-                            sig_script: Script(vec![4, 255, 255, 0, 29, 1, 11]),
+                            unlock_script: Script(vec![4, 255, 255, 0, 29, 1, 11]),
                             sequence: 4294967295,
                         }],
                         outputs: vec![TxOut {
                             amount: 5000000000,
-                            pk_script: Script(vec![
+                            lock_script: Script(vec![
                                 65, 4, 114, 17, 168, 36, 245, 91, 80, 82, 40, 228, 195, 213, 25,
                                 76, 31, 207, 170, 21, 164, 86, 171, 223, 55, 249, 185, 217, 122,
                                 64, 64, 175, 192, 115, 222, 230, 200, 144, 100, 152, 79, 3, 56, 82,
@@ -258,12 +258,12 @@ mod tests {
                         hash: Hash256([7; 32]),
                         index: 3,
                     },
-                    sig_script: Script(vec![9, 8, 7]),
+                    unlock_script: Script(vec![9, 8, 7]),
                     sequence: 42,
                 }],
                 outputs: vec![TxOut {
                     amount: 23,
-                    pk_script: Script(vec![1, 2, 3, 4, 5]),
+                    lock_script: Script(vec![1, 2, 3, 4, 5]),
                 }],
                 lock_time: 4,
             }],

@@ -10,13 +10,13 @@ pub struct TxOut {
     /// Number of satoshis to spend
     pub amount: i64,
     /// Public key script to claim the output
-    pub pk_script: Script,
+    pub lock_script: Script,
 }
 
 impl TxOut {
     /// Returns the size of the transaction output in bytes
     pub fn size(&self) -> usize {
-        8 + var_int::size(self.pk_script.0.len() as u64) + self.pk_script.0.len()
+        8 + var_int::size(self.lock_script.0.len() as u64) + self.lock_script.0.len()
     }
 }
 
@@ -24,15 +24,18 @@ impl Serializable<TxOut> for TxOut {
     fn read(reader: &mut dyn Read) -> Result<TxOut> {
         let amount = reader.read_i64::<LittleEndian>()?;
         let script_len = var_int::read(reader)?;
-        let mut pk_script = Script(vec![0; script_len as usize]);
-        reader.read(&mut pk_script.0)?;
-        Ok(TxOut { amount, pk_script })
+        let mut lock_script = Script(vec![0; script_len as usize]);
+        reader.read(&mut lock_script.0)?;
+        Ok(TxOut {
+            amount,
+            lock_script,
+        })
     }
 
     fn write(&self, writer: &mut dyn Write) -> io::Result<()> {
         writer.write_i64::<LittleEndian>(self.amount)?;
-        var_int::write(self.pk_script.0.len() as u64, writer)?;
-        writer.write(&self.pk_script.0)?;
+        var_int::write(self.lock_script.0.len() as u64, writer)?;
+        writer.write(&self.lock_script.0)?;
         Ok(())
     }
 }
@@ -47,7 +50,7 @@ mod tests {
         let mut v = Vec::new();
         let t = TxOut {
             amount: 4400044000,
-            pk_script: Script(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 99, 98, 97, 96]),
+            lock_script: Script(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 99, 98, 97, 96]),
         };
         t.write(&mut v).unwrap();
         assert!(v.len() == t.size());

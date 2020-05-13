@@ -106,9 +106,9 @@ impl Tx {
             let tx_out = utxos.get(&tx_in.prev_output).unwrap();
 
             let mut script = Script::new();
-            script.append_slice(&tx_in.sig_script.0);
+            script.append_slice(&tx_in.unlock_script.0);
             script.append(op_codes::OP_CODESEPARATOR);
-            script.append_slice(&tx_out.pk_script.0);
+            script.append_slice(&tx_out.lock_script.0);
 
             let mut tx_checker = TransactionChecker {
                 tx: self,
@@ -130,9 +130,9 @@ impl Tx {
 
         if use_genesis_rules {
             for tx_out in self.outputs.iter() {
-                if tx_out.pk_script.0.len() == 22
-                    && tx_out.pk_script.0[0] == OP_HASH160
-                    && tx_out.pk_script.0[21] == OP_EQUAL
+                if tx_out.lock_script.0.len() == 22
+                    && tx_out.lock_script.0[0] == OP_HASH160
+                    && tx_out.lock_script.0[21] == OP_EQUAL
                 {
                     return Err(Error::BadData("P2SH sunsetted".to_string()));
                 }
@@ -249,7 +249,7 @@ mod tests {
                         hash: Hash256([9; 32]),
                         index: 9,
                     },
-                    sig_script: Script(vec![1, 3, 5, 7, 9]),
+                    unlock_script: Script(vec![1, 3, 5, 7, 9]),
                     sequence: 100,
                 },
                 TxIn {
@@ -257,18 +257,18 @@ mod tests {
                         hash: Hash256([0; 32]),
                         index: 8,
                     },
-                    sig_script: Script(vec![3; 333]),
+                    unlock_script: Script(vec![3; 333]),
                     sequence: 22,
                 },
             ],
             outputs: vec![
                 TxOut {
                     amount: 99,
-                    pk_script: Script(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 99, 98, 97, 96]),
+                    lock_script: Script(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 99, 98, 97, 96]),
                 },
                 TxOut {
                     amount: 199,
-                    pk_script: Script(vec![56, 78, 90, 90, 78, 56]),
+                    lock_script: Script(vec![56, 78, 90, 90, 78, 56]),
                 },
             ],
             lock_time: 1000,
@@ -288,12 +288,12 @@ mod tests {
                     hash: Hash256([0; 32]),
                     index: 4294967295,
                 },
-                sig_script: Script(vec![4, 255, 255, 0, 29, 1, 11]),
+                unlock_script: Script(vec![4, 255, 255, 0, 29, 1, 11]),
                 sequence: 4294967295,
             }],
             outputs: vec![TxOut {
                 amount: 5000000000,
-                pk_script: Script(vec![
+                lock_script: Script(vec![
                     65, 4, 114, 17, 168, 36, 245, 91, 80, 82, 40, 228, 195, 213, 25, 76, 31, 207,
                     170, 21, 164, 86, 171, 223, 55, 249, 185, 217, 122, 64, 64, 175, 192, 115, 222,
                     230, 200, 144, 100, 152, 79, 3, 56, 82, 55, 217, 33, 103, 193, 62, 35, 100, 70,
@@ -316,7 +316,7 @@ mod tests {
             },
             TxOut {
                 amount: 100,
-                pk_script: Script(vec![]),
+                lock_script: Script(vec![]),
             },
         );
         let mut utxos = LinkedHashMap::new();
@@ -326,17 +326,17 @@ mod tests {
             version: 2,
             inputs: vec![TxIn {
                 prev_output: utxo.0.clone(),
-                sig_script: Script(vec![op_codes::OP_1]),
+                unlock_script: Script(vec![op_codes::OP_1]),
                 sequence: 0,
             }],
             outputs: vec![
                 TxOut {
                     amount: 10,
-                    pk_script: Script(vec![]),
+                    lock_script: Script(vec![]),
                 },
                 TxOut {
                     amount: 20,
-                    pk_script: Script(vec![]),
+                    lock_script: Script(vec![]),
                 },
             ],
             lock_time: 0,
@@ -422,13 +422,13 @@ mod tests {
 
         let mut utxos_clone = utxos.clone();
         let prev_output = &tx.inputs[0].prev_output;
-        utxos_clone.get_mut(prev_output).unwrap().pk_script = Script(vec![op_codes::OP_0]);
+        utxos_clone.get_mut(prev_output).unwrap().lock_script = Script(vec![op_codes::OP_0]);
         assert!(tx
             .validate(true, true, &utxos_clone, &HashSet::new())
             .is_err());
 
         let mut tx_test = tx.clone();
-        tx_test.outputs[0].pk_script = Script(vec![
+        tx_test.outputs[0].lock_script = Script(vec![
             OP_HASH160, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, OP_EQUAL,
         ]);
         assert!(tx_test

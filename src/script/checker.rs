@@ -160,19 +160,19 @@ mod tests {
         let pk = PublicKey::from_secret_key(&secp, &secret_key).serialize();
         let pkh = hash160(&pk);
 
-        let mut pk_script = Script::new();
-        pk_script.append(OP_DUP);
-        pk_script.append(OP_HASH160);
-        pk_script.append_data(&pkh.0);
-        pk_script.append(OP_EQUALVERIFY);
-        pk_script.append(OP_CHECKSIG);
+        let mut lock_script = Script::new();
+        lock_script.append(OP_DUP);
+        lock_script.append(OP_HASH160);
+        lock_script.append_data(&pkh.0);
+        lock_script.append(OP_EQUALVERIFY);
+        lock_script.append(OP_CHECKSIG);
 
         let tx_1 = Tx {
             version: 1,
             inputs: vec![],
             outputs: vec![TxOut {
                 amount: 10,
-                pk_script,
+                lock_script,
             }],
             lock_time: 0,
         };
@@ -184,7 +184,7 @@ mod tests {
                     hash: tx_1.hash(),
                     index: 0,
                 },
-                sig_script: Script(vec![]),
+                unlock_script: Script(vec![]),
                 sequence: 0xffffffff,
             }],
             outputs: vec![],
@@ -192,14 +192,14 @@ mod tests {
         };
 
         let mut cache = SigHashCache::new();
-        let pk_script = &tx_1.outputs[0].pk_script.0;
-        let sig_hash = sighash(&tx_2, 0, pk_script, 10, sighash_type, &mut cache).unwrap();
+        let lock_script = &tx_1.outputs[0].lock_script.0;
+        let sig_hash = sighash(&tx_2, 0, lock_script, 10, sighash_type, &mut cache).unwrap();
         let sig = generate_signature(&private_key, &sig_hash, sighash_type).unwrap();
 
-        let mut sig_script = Script::new();
-        sig_script.append_data(&sig);
-        sig_script.append_data(&pk);
-        tx_2.inputs[0].sig_script = sig_script;
+        let mut unlock_script = Script::new();
+        unlock_script.append_data(&sig);
+        unlock_script.append_data(&pk);
+        tx_2.inputs[0].unlock_script = unlock_script;
 
         let mut cache = SigHashCache::new();
         let mut c = TransactionChecker {
@@ -211,9 +211,9 @@ mod tests {
         };
 
         let mut script = Script::new();
-        script.append_slice(&tx_2.inputs[0].sig_script.0);
+        script.append_slice(&tx_2.inputs[0].unlock_script.0);
         script.append(OP_CODESEPARATOR);
-        script.append_slice(&tx_1.outputs[0].pk_script.0);
+        script.append_slice(&tx_1.outputs[0].lock_script.0);
         assert!(script.eval(&mut c, NO_FLAGS).is_ok());
     }
 
@@ -235,20 +235,20 @@ mod tests {
         let pk2 = PublicKey::from_secret_key(&secp, &secret_key2).serialize();
         let pk3 = PublicKey::from_secret_key(&secp, &secret_key3).serialize();
 
-        let mut pk_script = Script::new();
-        pk_script.append(OP_2);
-        pk_script.append_data(&pk1);
-        pk_script.append_data(&pk2);
-        pk_script.append_data(&pk3);
-        pk_script.append(OP_3);
-        pk_script.append(OP_CHECKMULTISIG);
+        let mut lock_script = Script::new();
+        lock_script.append(OP_2);
+        lock_script.append_data(&pk1);
+        lock_script.append_data(&pk2);
+        lock_script.append_data(&pk3);
+        lock_script.append(OP_3);
+        lock_script.append(OP_CHECKMULTISIG);
 
         let tx_1 = Tx {
             version: 1,
             inputs: vec![],
             outputs: vec![TxOut {
                 amount: 10,
-                pk_script,
+                lock_script,
             }],
             lock_time: 0,
         };
@@ -260,7 +260,7 @@ mod tests {
                     hash: tx_1.hash(),
                     index: 0,
                 },
-                sig_script: Script(vec![]),
+                unlock_script: Script(vec![]),
                 sequence: 0xffffffff,
             }],
             outputs: vec![],
@@ -268,16 +268,16 @@ mod tests {
         };
 
         let mut cache = SigHashCache::new();
-        let pk_script = &tx_1.outputs[0].pk_script.0;
-        let sig_hash = sighash(&tx_2, 0, pk_script, 10, sighash_type, &mut cache).unwrap();
+        let lock_script = &tx_1.outputs[0].lock_script.0;
+        let sig_hash = sighash(&tx_2, 0, lock_script, 10, sighash_type, &mut cache).unwrap();
         let sig1 = generate_signature(&private_key1, &sig_hash, sighash_type).unwrap();
         let sig3 = generate_signature(&private_key3, &sig_hash, sighash_type).unwrap();
 
-        let mut sig_script = Script::new();
-        sig_script.append(OP_0);
-        sig_script.append_data(&sig1);
-        sig_script.append_data(&sig3);
-        tx_2.inputs[0].sig_script = sig_script;
+        let mut unlock_script = Script::new();
+        unlock_script.append(OP_0);
+        unlock_script.append_data(&sig1);
+        unlock_script.append_data(&sig3);
+        tx_2.inputs[0].unlock_script = unlock_script;
 
         let mut cache = SigHashCache::new();
         let mut c = TransactionChecker {
@@ -289,9 +289,9 @@ mod tests {
         };
 
         let mut script = Script::new();
-        script.append_slice(&tx_2.inputs[0].sig_script.0);
+        script.append_slice(&tx_2.inputs[0].unlock_script.0);
         script.append(OP_CODESEPARATOR);
-        script.append_slice(&tx_1.outputs[0].pk_script.0);
+        script.append_slice(&tx_1.outputs[0].lock_script.0);
         assert!(script.eval(&mut c, NO_FLAGS).is_ok());
     }
 
@@ -314,19 +314,19 @@ mod tests {
         let pk2 = PublicKey::from_secret_key(&secp, &secret_key2).serialize();
         let pkh2 = hash160(&pk2);
 
-        let mut pk_script1 = Script::new();
-        pk_script1.append(OP_DUP);
-        pk_script1.append(OP_HASH160);
-        pk_script1.append_data(&pkh1.0);
-        pk_script1.append(OP_EQUALVERIFY);
-        pk_script1.append(OP_CHECKSIG);
+        let mut lock_script1 = Script::new();
+        lock_script1.append(OP_DUP);
+        lock_script1.append(OP_HASH160);
+        lock_script1.append_data(&pkh1.0);
+        lock_script1.append(OP_EQUALVERIFY);
+        lock_script1.append(OP_CHECKSIG);
 
-        let mut pk_script2 = Script::new();
-        pk_script2.append(OP_DUP);
-        pk_script2.append(OP_HASH160);
-        pk_script2.append_data(&pkh2.0);
-        pk_script2.append(OP_EQUALVERIFY);
-        pk_script2.append(OP_CHECKSIG);
+        let mut lock_script2 = Script::new();
+        lock_script2.append(OP_DUP);
+        lock_script2.append(OP_HASH160);
+        lock_script2.append_data(&pkh2.0);
+        lock_script2.append(OP_EQUALVERIFY);
+        lock_script2.append(OP_CHECKSIG);
 
         let tx_1 = Tx {
             version: 1,
@@ -334,11 +334,11 @@ mod tests {
             outputs: vec![
                 TxOut {
                     amount: 10,
-                    pk_script: pk_script1,
+                    lock_script: lock_script1,
                 },
                 TxOut {
                     amount: 20,
-                    pk_script: pk_script2,
+                    lock_script: lock_script2,
                 },
             ],
             lock_time: 0,
@@ -351,7 +351,7 @@ mod tests {
                     hash: tx_1.hash(),
                     index: 0,
                 },
-                sig_script: Script(vec![]),
+                unlock_script: Script(vec![]),
                 sequence: 0xffffffff,
             }],
             outputs: vec![],
@@ -361,14 +361,14 @@ mod tests {
         // Sign the first input
 
         let mut cache = SigHashCache::new();
-        let pk_script = &tx_1.outputs[0].pk_script.0;
-        let sig_hash1 = sighash(&tx_2, 0, pk_script, 10, sighash_type, &mut cache).unwrap();
+        let lock_script = &tx_1.outputs[0].lock_script.0;
+        let sig_hash1 = sighash(&tx_2, 0, lock_script, 10, sighash_type, &mut cache).unwrap();
         let sig1 = generate_signature(&private_key1, &sig_hash1, sighash_type).unwrap();
 
-        let mut sig_script1 = Script::new();
-        sig_script1.append_data(&sig1);
-        sig_script1.append_data(&pk1);
-        tx_2.inputs[0].sig_script = sig_script1;
+        let mut unlock_script1 = Script::new();
+        unlock_script1.append_data(&sig1);
+        unlock_script1.append_data(&pk1);
+        tx_2.inputs[0].unlock_script = unlock_script1;
 
         // Add another input and sign that separately
 
@@ -377,20 +377,20 @@ mod tests {
                 hash: tx_1.hash(),
                 index: 1,
             },
-            sig_script: Script(vec![]),
+            unlock_script: Script(vec![]),
             sequence: 0xffffffff,
         });
 
         let mut cache = SigHashCache::new();
-        let pk_script = &tx_1.outputs[1].pk_script.0;
+        let lock_script = &tx_1.outputs[1].lock_script.0;
 
-        let sig_hash2 = sighash(&tx_2, 1, pk_script, 20, sighash_type, &mut cache).unwrap();
+        let sig_hash2 = sighash(&tx_2, 1, lock_script, 20, sighash_type, &mut cache).unwrap();
         let sig2 = generate_signature(&private_key2, &sig_hash2, sighash_type).unwrap();
 
-        let mut sig_script2 = Script::new();
-        sig_script2.append_data(&sig2);
-        sig_script2.append_data(&pk2);
-        tx_2.inputs[1].sig_script = sig_script2;
+        let mut unlock_script2 = Script::new();
+        unlock_script2.append_data(&sig2);
+        unlock_script2.append_data(&pk2);
+        tx_2.inputs[1].unlock_script = unlock_script2;
 
         let mut cache = SigHashCache::new();
         let mut c1 = TransactionChecker {
@@ -402,9 +402,9 @@ mod tests {
         };
 
         let mut script1 = Script::new();
-        script1.append_slice(&tx_2.inputs[0].sig_script.0);
+        script1.append_slice(&tx_2.inputs[0].unlock_script.0);
         script1.append(OP_CODESEPARATOR);
-        script1.append_slice(&tx_1.outputs[0].pk_script.0);
+        script1.append_slice(&tx_1.outputs[0].lock_script.0);
         assert!(script1.eval(&mut c1, NO_FLAGS).is_ok());
 
         let mut cache = SigHashCache::new();
@@ -417,9 +417,9 @@ mod tests {
         };
 
         let mut script2 = Script::new();
-        script2.append_slice(&tx_2.inputs[1].sig_script.0);
+        script2.append_slice(&tx_2.inputs[1].unlock_script.0);
         script2.append(OP_CODESEPARATOR);
-        script2.append_slice(&tx_1.outputs[1].pk_script.0);
+        script2.append_slice(&tx_1.outputs[1].lock_script.0);
         assert!(script2.eval(&mut c2, NO_FLAGS).is_ok());
     }
 
@@ -442,19 +442,19 @@ mod tests {
         let pk2 = PublicKey::from_secret_key(&secp, &secret_key2).serialize();
         let pkh2 = hash160(&pk2);
 
-        let mut pk_script1 = Script::new();
-        pk_script1.append(OP_DUP);
-        pk_script1.append(OP_HASH160);
-        pk_script1.append_data(&pkh1.0);
-        pk_script1.append(OP_EQUALVERIFY);
-        pk_script1.append(OP_CHECKSIG);
+        let mut lock_script1 = Script::new();
+        lock_script1.append(OP_DUP);
+        lock_script1.append(OP_HASH160);
+        lock_script1.append_data(&pkh1.0);
+        lock_script1.append(OP_EQUALVERIFY);
+        lock_script1.append(OP_CHECKSIG);
 
-        let mut pk_script2 = Script::new();
-        pk_script2.append(OP_DUP);
-        pk_script2.append(OP_HASH160);
-        pk_script2.append_data(&pkh2.0);
-        pk_script2.append(OP_EQUALVERIFY);
-        pk_script2.append(OP_CHECKSIG);
+        let mut lock_script2 = Script::new();
+        lock_script2.append(OP_DUP);
+        lock_script2.append(OP_HASH160);
+        lock_script2.append_data(&pkh2.0);
+        lock_script2.append(OP_EQUALVERIFY);
+        lock_script2.append(OP_CHECKSIG);
 
         let tx_1 = Tx {
             version: 1,
@@ -462,11 +462,11 @@ mod tests {
             outputs: vec![
                 TxOut {
                     amount: 10,
-                    pk_script: pk_script1.clone(),
+                    lock_script: lock_script1.clone(),
                 },
                 TxOut {
                     amount: 20,
-                    pk_script: pk_script2.clone(),
+                    lock_script: lock_script2.clone(),
                 },
             ],
             lock_time: 0,
@@ -479,12 +479,12 @@ mod tests {
                     hash: tx_1.hash(),
                     index: 0,
                 },
-                sig_script: Script(vec![]),
+                unlock_script: Script(vec![]),
                 sequence: 0xffffffff,
             }],
             outputs: vec![TxOut {
                 amount: 10,
-                pk_script: pk_script1.clone(),
+                lock_script: lock_script1.clone(),
             }],
             lock_time: 0,
         };
@@ -492,14 +492,14 @@ mod tests {
         // Sign the first input and output
 
         let mut cache = SigHashCache::new();
-        let pk_script = &tx_1.outputs[0].pk_script.0;
-        let sig_hash1 = sighash(&tx_2, 0, pk_script, 10, sighash_type, &mut cache).unwrap();
+        let lock_script = &tx_1.outputs[0].lock_script.0;
+        let sig_hash1 = sighash(&tx_2, 0, lock_script, 10, sighash_type, &mut cache).unwrap();
         let sig1 = generate_signature(&private_key1, &sig_hash1, sighash_type).unwrap();
 
-        let mut sig_script1 = Script::new();
-        sig_script1.append_data(&sig1);
-        sig_script1.append_data(&pk1);
-        tx_2.inputs[0].sig_script = sig_script1;
+        let mut unlock_script1 = Script::new();
+        unlock_script1.append_data(&sig1);
+        unlock_script1.append_data(&pk1);
+        tx_2.inputs[0].unlock_script = unlock_script1;
 
         // Add another input and output and sign that separately
 
@@ -508,19 +508,19 @@ mod tests {
                 hash: tx_1.hash(),
                 index: 1,
             },
-            sig_script: Script(vec![]),
+            unlock_script: Script(vec![]),
             sequence: 0xffffffff,
         });
         tx_2.outputs.push(TxOut {
             amount: 20,
-            pk_script: pk_script2.clone(),
+            lock_script: lock_script2.clone(),
         });
 
         let mut cache = SigHashCache::new();
         let sig_hash2 = sighash(
             &tx_2,
             1,
-            &tx_1.outputs[1].pk_script.0,
+            &tx_1.outputs[1].lock_script.0,
             20,
             sighash_type,
             &mut cache,
@@ -528,10 +528,10 @@ mod tests {
         .unwrap();
         let sig2 = generate_signature(&private_key2, &sig_hash2, sighash_type).unwrap();
 
-        let mut sig_script2 = Script::new();
-        sig_script2.append_data(&sig2);
-        sig_script2.append_data(&pk2);
-        tx_2.inputs[1].sig_script = sig_script2;
+        let mut unlock_script2 = Script::new();
+        unlock_script2.append_data(&sig2);
+        unlock_script2.append_data(&pk2);
+        tx_2.inputs[1].unlock_script = unlock_script2;
 
         let mut cache = SigHashCache::new();
         let mut c1 = TransactionChecker {
@@ -543,9 +543,9 @@ mod tests {
         };
 
         let mut script1 = Script::new();
-        script1.append_slice(&tx_2.inputs[0].sig_script.0);
+        script1.append_slice(&tx_2.inputs[0].unlock_script.0);
         script1.append(OP_CODESEPARATOR);
-        script1.append_slice(&tx_1.outputs[0].pk_script.0);
+        script1.append_slice(&tx_1.outputs[0].lock_script.0);
         assert!(script1.eval(&mut c1, NO_FLAGS).is_ok());
 
         let mut cache = SigHashCache::new();
@@ -558,18 +558,18 @@ mod tests {
         };
 
         let mut script2 = Script::new();
-        script2.append_slice(&tx_2.inputs[1].sig_script.0);
+        script2.append_slice(&tx_2.inputs[1].unlock_script.0);
         script2.append(OP_CODESEPARATOR);
-        script2.append_slice(&tx_1.outputs[1].pk_script.0);
+        script2.append_slice(&tx_1.outputs[1].lock_script.0);
         assert!(script2.eval(&mut c2, NO_FLAGS).is_ok());
     }
 
     #[test]
     fn check_locktime() {
-        let mut pk_script = Script::new();
-        pk_script.append_num(500).unwrap();
-        pk_script.append(OP_CHECKLOCKTIMEVERIFY);
-        pk_script.append(OP_1);
+        let mut lock_script = Script::new();
+        lock_script.append_num(500).unwrap();
+        lock_script.append(OP_CHECKLOCKTIMEVERIFY);
+        lock_script.append(OP_1);
         let mut tx = Tx {
             version: 1,
             inputs: vec![TxIn {
@@ -577,7 +577,7 @@ mod tests {
                     hash: Hash256([0; 32]),
                     index: 0,
                 },
-                sig_script: Script(vec![]),
+                unlock_script: Script(vec![]),
                 sequence: 0,
             }],
             outputs: vec![],
@@ -592,7 +592,7 @@ mod tests {
                 amount: 0,
                 require_sighash_forkid: false,
             };
-            assert!(pk_script.eval(&mut c, PREGENESIS_RULES).is_err());
+            assert!(lock_script.eval(&mut c, PREGENESIS_RULES).is_err());
         }
         {
             tx.lock_time = 500;
@@ -604,18 +604,18 @@ mod tests {
                 amount: 0,
                 require_sighash_forkid: false,
             };
-            assert!(pk_script.eval(&mut c, PREGENESIS_RULES).is_ok());
+            assert!(lock_script.eval(&mut c, PREGENESIS_RULES).is_ok());
         }
     }
 
     #[test]
     fn check_sequence() {
-        let mut pk_script = Script::new();
-        pk_script
+        let mut lock_script = Script::new();
+        lock_script
             .append_num(500 | SEQUENCE_LOCKTIME_TYPE_FLAG as i32)
             .unwrap();
-        pk_script.append(OP_CHECKSEQUENCEVERIFY);
-        pk_script.append(OP_1);
+        lock_script.append(OP_CHECKSEQUENCEVERIFY);
+        lock_script.append(OP_1);
         let mut tx = Tx {
             version: 2,
             inputs: vec![TxIn {
@@ -623,7 +623,7 @@ mod tests {
                     hash: Hash256([0; 32]),
                     index: 0,
                 },
-                sig_script: Script(vec![]),
+                unlock_script: Script(vec![]),
                 sequence: 499 | SEQUENCE_LOCKTIME_TYPE_FLAG,
             }],
             outputs: vec![],
@@ -638,7 +638,7 @@ mod tests {
                 amount: 0,
                 require_sighash_forkid: false,
             };
-            assert!(pk_script.eval(&mut c, PREGENESIS_RULES).is_err());
+            assert!(lock_script.eval(&mut c, PREGENESIS_RULES).is_err());
         }
         {
             tx.inputs[0].sequence = 500 | SEQUENCE_LOCKTIME_TYPE_FLAG;
@@ -650,7 +650,7 @@ mod tests {
                 amount: 0,
                 require_sighash_forkid: false,
             };
-            assert!(pk_script.eval(&mut c, PREGENESIS_RULES).is_ok());
+            assert!(lock_script.eval(&mut c, PREGENESIS_RULES).is_ok());
         }
     }
 }
