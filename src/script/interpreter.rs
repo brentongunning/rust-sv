@@ -63,7 +63,7 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T) -> Result<()> {
             OP_14 => stack.push(encode_num(14)?),
             OP_15 => stack.push(encode_num(15)?),
             OP_16 => stack.push(encode_num(16)?),
-            len @ 1...75 => {
+            len @ 1..=75 => {
                 remains(i + 1, len as usize, script)?;
                 stack.push(script[i + 1..i + 1 + len as usize].to_vec());
             }
@@ -830,7 +830,7 @@ pub fn next_op(i: usize, script: &[u8]) -> usize {
         return script.len();
     }
     let next = match script[i] {
-        len @ 1...75 => i + 1 + len as usize,
+        len @ 1..=75 => i + 1 + len as usize,
         OP_PUSHDATA1 => {
             if i + 2 > script.len() {
                 return script.len();

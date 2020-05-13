@@ -106,7 +106,7 @@ impl Peer {
         port: u16,
         network: Network,
         version: Version,
-        filter: Arc<PeerFilter>,
+        filter: Arc<dyn PeerFilter>,
     ) -> Arc<Peer> {
         let peer = Arc::new(Peer {
             id: ProcessUniqueId::new(),
@@ -233,7 +233,7 @@ impl Peer {
         }
     }
 
-    fn connect_internal(peer: &Arc<Peer>, version: Version, filter: Arc<PeerFilter>) {
+    fn connect_internal(peer: &Arc<Peer>, version: Version, filter: Arc<dyn PeerFilter>) {
         info!("{:?} Connecting to {:?}:{}", peer, peer.ip, peer.port);
 
         let tpeer = peer.clone();
@@ -313,7 +313,7 @@ impl Peer {
         });
     }
 
-    fn handshake(self: &Peer, version: Version, filter: Arc<PeerFilter>) -> Result<TcpStream> {
+    fn handshake(self: &Peer, version: Version, filter: Arc<dyn PeerFilter>) -> Result<TcpStream> {
         // Connect over TCP
         let tcp_addr = SocketAddr::new(self.ip, self.port);
         let mut tcp_stream = TcpStream::connect_timeout(&tcp_addr, CONNECT_TIMEOUT)?;

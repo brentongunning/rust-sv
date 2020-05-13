@@ -4,7 +4,7 @@ use std::io::Read;
 /// Wraps a reader so reads become all-or-nothing
 pub struct AtomicReader<'a> {
     buf: Vec<u8>,
-    reader: &'a mut Read,
+    reader: &'a mut dyn Read,
 }
 
 impl<'a> AtomicReader<'a> {

@@ -67,16 +67,16 @@ impl Script {
         let len = data.len();
         match len {
             0 => self.0.push(op_codes::OP_0),
-            1...75 => {
+            1..=75 => {
                 self.0.push(op_codes::OP_PUSH + len as u8);
                 self.0.extend_from_slice(data);
             }
-            76...255 => {
+            76..=255 => {
                 self.0.push(op_codes::OP_PUSHDATA1);
                 self.0.push(len as u8);
                 self.0.extend_from_slice(data);
             }
-            256...65535 => {
+            256..=65535 => {
                 self.0.push(op_codes::OP_PUSHDATA2);
                 self.0.push((len >> 0) as u8);
                 self.0.push((len >> 8) as u8);
@@ -136,7 +136,7 @@ impl fmt::Debug for Script {
                 OP_14 => ret.push_str("OP_14"),
                 OP_15 => ret.push_str("OP_15"),
                 OP_16 => ret.push_str("OP_16"),
-                len @ 1...75 => {
+                len @ 1..=75 => {
                     ret.push_str(&format!("OP_PUSH+{} ", len));
                     if i + 1 + len as usize <= script.len() {
                         ret.push_str(&hex::encode(&script[i + 1..i + 1 + len as usize]));

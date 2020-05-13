@@ -36,8 +36,8 @@ pub trait Observable<T: Send + Sync + Clone + 'static> {
 
 /// Stores the observers for a particular event
 pub struct Subject<T> {
-    observers: RwLock<Vec<Weak<Observer<T>>>>,
-    pending: RwLock<Vec<Weak<Observer<T>>>>,
+    observers: RwLock<Vec<Weak<dyn Observer<T>>>>,
+    pending: RwLock<Vec<Weak<dyn Observer<T>>>>,
 }
 
 impl<T> Subject<T> {
@@ -79,7 +79,7 @@ impl<T> Observer<T> for Subject<T> {
 
 impl<T: Send + Sync + Clone + 'static> Observable<T> for Subject<T> {
     fn subscribe<S: Observer<T> + 'static>(&self, observer: &Arc<S>) {
-        let weak_observer = Arc::downgrade(observer) as Weak<Observer<T>>;
+        let weak_observer = Arc::downgrade(observer) as Weak<dyn Observer<T>>;
 
         match self.observers.try_write() {
             Ok(mut observers) => observers.push(weak_observer),

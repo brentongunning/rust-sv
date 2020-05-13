@@ -9,7 +9,7 @@ const LOCKTIME_THRESHOLD: i32 = 500000000;
 /// Disables the relative lock time for the sequence field
 const SEQUENCE_LOCKTIME_DISABLE_FLAG: u32 = 1 << 31;
 /// When set, sequence uses time. When unset, it uses block height.
-const SEQUENCE_LOCKTIME_TYPE_FLAG: u32 = (1 << 22);
+const SEQUENCE_LOCKTIME_TYPE_FLAG: u32 = 1 << 22;
 
 /// Checks that external values are correct in the script
 pub trait Checker {
