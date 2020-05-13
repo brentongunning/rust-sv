@@ -1,6 +1,7 @@
 use crate::script::op_codes::*;
 use crate::script::stack::{
-    decode_bool, decode_num, encode_num, encode_num_overflow, pop_bool, pop_num,
+    decode_bool, decode_num, encode_bigint, encode_num, encode_num_overflow, pop_bigint, pop_bool,
+    pop_num,
 };
 use crate::script::Checker;
 use crate::transaction::sighash::SIGHASH_FORKID;
@@ -405,10 +406,10 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 stack.push(encode_num(x)?);
             }
             OP_ADD => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 let sum = a + b;
-                stack.push(encode_num_overflow(sum)?);
+                stack.push(encode_bigint(sum));
             }
             OP_SUB => {
                 let b = pop_num(&mut stack)? as i64;
@@ -1006,6 +1007,10 @@ mod tests {
         let mut v = vec![OP_PUSH + 4, 0xFF, 0xFF, 0xFF, 0xFF];
         v.extend_from_slice(&[OP_PUSH + 4, 0xFF, 0xFF, 0xFF, 0xFF]);
         v.extend_from_slice(&[OP_ADD, OP_SIZE, OP_5, OP_EQUAL]);
+        pass(&v);
+        let mut v = vec![OP_PUSH + 5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
+        v.extend_from_slice(&[OP_PUSH + 5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+        v.extend_from_slice(&[OP_ADD, OP_SIZE, OP_6, OP_EQUAL]);
         pass(&v);
         let mut v = vec![OP_PUSH + 4, 0xFF, 0xFF, 0xFF, 0x7F];
         v.extend_from_slice(&[OP_PUSH + 4, 0xFF, 0xFF, 0xFF, 0xFF]);

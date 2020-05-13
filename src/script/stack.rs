@@ -1,4 +1,6 @@
 use crate::util::{Error, Result};
+use num_bigint::{BigInt, Sign};
+use num_traits::Zero;
 
 /// Pops a bool off the stack
 #[inline]
@@ -16,7 +18,7 @@ pub fn pop_bool(stack: &mut Vec<Vec<u8>>) -> Result<bool> {
     Ok(decode_bool(&top))
 }
 
-/// Pops a number off the stack
+/// Pops a pre-genesis number off the stack
 #[inline]
 pub fn pop_num(stack: &mut Vec<Vec<u8>>) -> Result<i32> {
     if stack.len() == 0 {
@@ -31,6 +33,26 @@ pub fn pop_num(stack: &mut Vec<Vec<u8>>) -> Result<i32> {
         return Err(Error::ScriptError(msg));
     }
     Ok(decode_num(&top)? as i32)
+}
+
+/// Pops a bigint number off the stack
+#[inline]
+pub fn pop_bigint(stack: &mut Vec<Vec<u8>>) -> Result<BigInt> {
+    if stack.len() == 0 {
+        let msg = "Cannot pop bigint, empty stack".to_string();
+        return Err(Error::ScriptError(msg));
+    }
+    let mut top = stack.pop().unwrap();
+    let len = top.len();
+    if top.len() == 0 {
+        return Ok(BigInt::zero());
+    }
+    let mut sign = Sign::Plus;
+    if top[len - 1] & 0x80 == 0x80 {
+        sign = Sign::Minus;
+    }
+    top[len - 1] &= !0x80;
+    Ok(BigInt::from_bytes_le(sign, &top))
 }
 
 /// Converts a stack item to a bool
@@ -110,6 +132,25 @@ pub fn encode_num(val: i64) -> Result<Vec<u8>> {
             ((posval >> 24) as u8) | negmask,
         ])
     }
+}
+
+/// Converts a number to a 32-bit stack item
+#[inline]
+pub fn encode_bigint(val: BigInt) -> Vec<u8> {
+    let mut result = val.to_bytes_le();
+    if result.1[result.1.len() - 1] & 0x80 == 0x80 {
+        result.1.push(match result.0 {
+            Sign::Plus | Sign::NoSign => 0x00,
+            Sign::Minus => 0x80,
+        });
+    } else if result.0 == Sign::Minus {
+        let len = result.1.len();
+        result.1[len - 1] |= 0x80;
+    }
+    if result.1.len() == 1 && result.1[0] == 0 {
+        return vec![];
+    }
+    result.1
 }
 
 /// Converts a number to a stack item, allowing for overflow to 5 bytes
