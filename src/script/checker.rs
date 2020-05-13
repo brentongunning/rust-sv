@@ -139,7 +139,7 @@ mod tests {
     use super::*;
     use crate::messages::{OutPoint, TxIn, TxOut};
     use crate::script::op_codes::*;
-    use crate::script::Script;
+    use crate::script::{Script, NO_FLAGS, PREGENESIS_RULES};
     use crate::transaction::generate_signature;
     use crate::transaction::sighash::{
         SIGHASH_ALL, SIGHASH_ANYONECANPAY, SIGHASH_FORKID, SIGHASH_NONE, SIGHASH_SINGLE,
@@ -214,7 +214,7 @@ mod tests {
         script.append_slice(&tx_2.inputs[0].sig_script.0);
         script.append(OP_CODESEPARATOR);
         script.append_slice(&tx_1.outputs[0].pk_script.0);
-        assert!(script.eval(&mut c).is_ok());
+        assert!(script.eval(&mut c, NO_FLAGS).is_ok());
     }
 
     #[test]
@@ -292,7 +292,7 @@ mod tests {
         script.append_slice(&tx_2.inputs[0].sig_script.0);
         script.append(OP_CODESEPARATOR);
         script.append_slice(&tx_1.outputs[0].pk_script.0);
-        assert!(script.eval(&mut c).is_ok());
+        assert!(script.eval(&mut c, NO_FLAGS).is_ok());
     }
 
     #[test]
@@ -405,7 +405,7 @@ mod tests {
         script1.append_slice(&tx_2.inputs[0].sig_script.0);
         script1.append(OP_CODESEPARATOR);
         script1.append_slice(&tx_1.outputs[0].pk_script.0);
-        assert!(script1.eval(&mut c1).is_ok());
+        assert!(script1.eval(&mut c1, NO_FLAGS).is_ok());
 
         let mut cache = SigHashCache::new();
         let mut c2 = TransactionChecker {
@@ -420,7 +420,7 @@ mod tests {
         script2.append_slice(&tx_2.inputs[1].sig_script.0);
         script2.append(OP_CODESEPARATOR);
         script2.append_slice(&tx_1.outputs[1].pk_script.0);
-        assert!(script2.eval(&mut c2).is_ok());
+        assert!(script2.eval(&mut c2, NO_FLAGS).is_ok());
     }
 
     #[test]
@@ -546,7 +546,7 @@ mod tests {
         script1.append_slice(&tx_2.inputs[0].sig_script.0);
         script1.append(OP_CODESEPARATOR);
         script1.append_slice(&tx_1.outputs[0].pk_script.0);
-        assert!(script1.eval(&mut c1).is_ok());
+        assert!(script1.eval(&mut c1, NO_FLAGS).is_ok());
 
         let mut cache = SigHashCache::new();
         let mut c2 = TransactionChecker {
@@ -561,7 +561,7 @@ mod tests {
         script2.append_slice(&tx_2.inputs[1].sig_script.0);
         script2.append(OP_CODESEPARATOR);
         script2.append_slice(&tx_1.outputs[1].pk_script.0);
-        assert!(script2.eval(&mut c2).is_ok());
+        assert!(script2.eval(&mut c2, NO_FLAGS).is_ok());
     }
 
     #[test]
@@ -592,7 +592,7 @@ mod tests {
                 amount: 0,
                 require_sighash_forkid: false,
             };
-            assert!(pk_script.eval(&mut c).is_err());
+            assert!(pk_script.eval(&mut c, PREGENESIS_RULES).is_err());
         }
         {
             tx.lock_time = 500;
@@ -604,7 +604,7 @@ mod tests {
                 amount: 0,
                 require_sighash_forkid: false,
             };
-            assert!(pk_script.eval(&mut c).is_ok());
+            assert!(pk_script.eval(&mut c, PREGENESIS_RULES).is_ok());
         }
     }
 
@@ -638,7 +638,7 @@ mod tests {
                 amount: 0,
                 require_sighash_forkid: false,
             };
-            assert!(pk_script.eval(&mut c).is_err());
+            assert!(pk_script.eval(&mut c, PREGENESIS_RULES).is_err());
         }
         {
             tx.inputs[0].sequence = 500 | SEQUENCE_LOCKTIME_TYPE_FLAG;
@@ -650,7 +650,7 @@ mod tests {
                 amount: 0,
                 require_sighash_forkid: false,
             };
-            assert!(pk_script.eval(&mut c).is_ok());
+            assert!(pk_script.eval(&mut c, PREGENESIS_RULES).is_ok());
         }
     }
 }

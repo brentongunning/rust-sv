@@ -1,6 +1,6 @@
 use crate::messages::message::Payload;
 use crate::messages::{OutPoint, TxIn, TxOut, COINBASE_OUTPOINT_HASH, COINBASE_OUTPOINT_INDEX};
-use crate::script::{op_codes, Script, TransactionChecker};
+use crate::script::{op_codes, Script, TransactionChecker, NO_FLAGS, PREGENESIS_RULES};
 use crate::transaction::sighash::SigHashCache;
 use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
@@ -38,9 +38,9 @@ impl Tx {
     pub fn validate(
         &self,
         require_sighash_forkid: bool,
-        _use_genesis_rules: bool,
+        use_genesis_rules: bool,
         utxos: &LinkedHashMap<OutPoint, TxOut>,
-        _pregenesis_outputs: &HashSet<OutPoint>,
+        pregenesis_outputs: &HashSet<OutPoint>,
     ) -> Result<()> {
         // Make sure neither in or out lists are empty
         if self.inputs.len() == 0 {
@@ -117,7 +117,14 @@ impl Tx {
                 require_sighash_forkid,
             };
 
-            script.eval(&mut tx_checker)?;
+            let is_pregenesis_input = pregenesis_outputs.contains(&tx_in.prev_output);
+            let flags = if !use_genesis_rules || is_pregenesis_input {
+                PREGENESIS_RULES
+            } else {
+                NO_FLAGS
+            };
+
+            script.eval(&mut tx_checker, flags)?;
         }
 
         Ok(())

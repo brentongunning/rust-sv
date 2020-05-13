@@ -6,14 +6,14 @@
 //!
 //! ```rust
 //! use sv::script::op_codes::*;
-//! use sv::script::{Script, TransactionlessChecker};
+//! use sv::script::{Script, TransactionlessChecker, NO_FLAGS};
 //!
 //! let mut script = Script::new();
 //! script.append(OP_10);
 //! script.append(OP_5);
 //! script.append(OP_DIV);
 //!
-//! script.eval(&mut TransactionlessChecker {}).unwrap();
+//! script.eval(&mut TransactionlessChecker {}, NO_FLAGS).unwrap();
 //! ```
 
 use crate::script::op_codes::*;
@@ -29,6 +29,7 @@ mod stack;
 
 pub use self::checker::{Checker, TransactionChecker, TransactionlessChecker};
 pub(crate) use self::interpreter::next_op;
+pub use self::interpreter::{NO_FLAGS, PREGENESIS_RULES};
 
 /// Maximum number of bytes pushable to the stack
 pub const MAX_SCRIPT_ELEMENT_SIZE: usize = 520;
@@ -102,8 +103,8 @@ impl Script {
     }
 
     /// Evaluates a script using the provided checker
-    pub fn eval<T: Checker>(&self, checker: &mut T) -> Result<()> {
-        self::interpreter::eval(&self.0, checker)
+    pub fn eval<T: Checker>(&self, checker: &mut T, flags: u32) -> Result<()> {
+        self::interpreter::eval(&self.0, checker, flags)
     }
 }
 

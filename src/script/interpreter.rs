@@ -15,8 +15,14 @@ use ripemd160::{Digest, Ripemd160};
 const STACK_CAPACITY: usize = 100;
 const ALT_STACK_CAPACITY: usize = 10;
 
+/// Execute the script with genesis rules
+pub const NO_FLAGS: u32 = 0x00;
+
+/// Flag to execute the script with pre-genesis rules
+pub const PREGENESIS_RULES: u32 = 0x01;
+
 /// Executes a script
-pub fn eval<T: Checker>(script: &[u8], checker: &mut T) -> Result<()> {
+pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()> {
     let mut stack: Vec<Vec<u8>> = Vec::with_capacity(STACK_CAPACITY);
     let mut alt_stack: Vec<Vec<u8>> = Vec::with_capacity(ALT_STACK_CAPACITY);
     // True if executing current if/else branch, false if next else
@@ -679,17 +685,21 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T) -> Result<()> {
                 }
             }
             OP_CHECKLOCKTIMEVERIFY => {
-                let locktime = pop_num(&mut stack)?;
-                if !checker.check_locktime(locktime)? {
-                    let msg = "OP_CHECKLOCKTIMEVERIFY failed".to_string();
-                    return Err(Error::ScriptError(msg));
+                if flags & PREGENESIS_RULES == PREGENESIS_RULES {
+                    let locktime = pop_num(&mut stack)?;
+                    if !checker.check_locktime(locktime)? {
+                        let msg = "OP_CHECKLOCKTIMEVERIFY failed".to_string();
+                        return Err(Error::ScriptError(msg));
+                    }
                 }
             }
             OP_CHECKSEQUENCEVERIFY => {
-                let sequence = pop_num(&mut stack)?;
-                if !checker.check_sequence(sequence)? {
-                    let msg = "OP_CHECKSEQUENCEVERIFY failed".to_string();
-                    return Err(Error::ScriptError(msg));
+                if flags & PREGENESIS_RULES == PREGENESIS_RULES {
+                    let sequence = pop_num(&mut stack)?;
+                    if !checker.check_sequence(sequence)? {
+                        let msg = "OP_CHECKSEQUENCEVERIFY failed".to_string();
+                        return Err(Error::ScriptError(msg));
+                    }
                 }
             }
             OP_NOP1 => {}
@@ -1144,13 +1154,20 @@ mod tests {
         pass(&[OP_0, OP_9, OP_1, OP_9, OP_1, OP_CHECKMULTISIG]);
         pass(&[OP_0, OP_9, OP_1, OP_9, OP_9, OP_9, OP_3, OP_CHECKMULTISIG]);
         let mut c = MockChecker::sig_checks(vec![true]);
-        assert!(eval(&[OP_0, OP_9, OP_1, OP_9, OP_1, OP_CHECKMULTISIG], &mut c).is_ok());
+        assert!(eval(
+            &[OP_0, OP_9, OP_1, OP_9, OP_1, OP_CHECKMULTISIG],
+            &mut c,
+            NO_FLAGS
+        )
+        .is_ok());
         let mut c = MockChecker::sig_checks(vec![false, true, true]);
         let mut s = vec![OP_0, OP_9, OP_9, OP_2, OP_9, OP_9, OP_9, OP_3];
         s.push(OP_CHECKMULTISIG);
-        assert!(eval(&s, &mut c).is_ok());
-        pass(&[OP_0, OP_CHECKLOCKTIMEVERIFY, OP_1]);
-        pass(&[OP_0, OP_CHECKSEQUENCEVERIFY, OP_1]);
+        assert!(eval(&s, &mut c, NO_FLAGS).is_ok());
+        pass_pregenesis(&[OP_0, OP_CHECKLOCKTIMEVERIFY, OP_1]);
+        pass(&[OP_CHECKLOCKTIMEVERIFY, OP_1]);
+        pass_pregenesis(&[OP_0, OP_CHECKSEQUENCEVERIFY, OP_1]);
+        pass(&[OP_CHECKSEQUENCEVERIFY, OP_1]);
         pass(&[OP_NOP1, OP_1]);
         pass(&[OP_NOP4, OP_1]);
         pass(&[OP_NOP5, OP_1]);
@@ -1410,11 +1427,11 @@ mod tests {
         fail(&[OP_CHECKSIG]);
         fail(&[OP_1, OP_CHECKSIG]);
         let mut c = MockChecker::sig_checks(vec![false; 1]);
-        assert!(eval(&[OP_1, OP_1, OP_CHECKSIG], &mut c).is_err());
+        assert!(eval(&[OP_1, OP_1, OP_CHECKSIG], &mut c, NO_FLAGS).is_err());
         fail(&[OP_CHECKSIGVERIFY]);
         fail(&[OP_1, OP_CHECKSIGVERIFY]);
         let mut c = MockChecker::sig_checks(vec![false; 1]);
-        assert!(eval(&[OP_1, OP_1, OP_CHECKSIGVERIFY, OP_1], &mut c).is_err());
+        assert!(eval(&[OP_1, OP_1, OP_CHECKSIGVERIFY, OP_1], &mut c, NO_FLAGS).is_err());
         fail(&[OP_CHECKMULTISIG]);
         fail(&[OP_1, OP_CHECKMULTISIG]);
         fail(&[OP_0, OP_0, OP_CHECKMULTISIG]);
@@ -1424,22 +1441,37 @@ mod tests {
         fail(&[OP_0, OP_0, OP_PUSH + 1, 21, OP_CHECKMULTISIG]);
         fail(&[OP_0, OP_9, OP_9, OP_2, OP_9, OP_1, OP_CHECKMULTISIG]);
         let mut c = MockChecker::sig_checks(vec![false; 1]);
-        assert!(eval(&[OP_0, OP_9, OP_1, OP_9, OP_1, OP_CHECKMULTISIG], &mut c).is_err());
+        assert!(eval(
+            &[OP_0, OP_9, OP_1, OP_9, OP_1, OP_CHECKMULTISIG],
+            &mut c,
+            NO_FLAGS
+        )
+        .is_err());
         let mut c = MockChecker::sig_checks(vec![true, false]);
         let s = [OP_0, OP_9, OP_9, OP_2, OP_9, OP_9, OP_2, OP_CHECKMULTISIG];
-        assert!(eval(&s, &mut c).is_err());
+        assert!(eval(&s, &mut c, NO_FLAGS).is_err());
         let mut c = MockChecker::sig_checks(vec![false, true, false]);
         let mut s = vec![OP_0, OP_9, OP_9, OP_2, OP_9, OP_9, OP_9, OP_3];
         s.push(OP_CHECKMULTISIG);
-        assert!(eval(&s, &mut c).is_err());
-        fail(&[OP_CHECKLOCKTIMEVERIFY, OP_1]);
-        fail(&[OP_PUSH + 5, 129, 0, 0, 0, 0, OP_CHECKLOCKTIMEVERIFY, OP_1]);
+        assert!(eval(&s, &mut c, NO_FLAGS).is_err());
+        fail_pregenesis(&[OP_CHECKLOCKTIMEVERIFY, OP_1]);
+        fail_pregenesis(&[OP_PUSH + 5, 129, 0, 0, 0, 0, OP_CHECKLOCKTIMEVERIFY, OP_1]);
         let mut c = MockChecker::locktime_checks(vec![false]);
-        assert!(eval(&vec![OP_0, OP_CHECKLOCKTIMEVERIFY, OP_1], &mut c).is_err());
-        fail(&[OP_CHECKSEQUENCEVERIFY, OP_1]);
-        fail(&[OP_PUSH + 5, 129, 0, 0, 0, 0, OP_CHECKSEQUENCEVERIFY, OP_1]);
+        assert!(eval(
+            &vec![OP_0, OP_CHECKLOCKTIMEVERIFY, OP_1],
+            &mut c,
+            PREGENESIS_RULES
+        )
+        .is_err());
+        fail_pregenesis(&[OP_CHECKSEQUENCEVERIFY, OP_1]);
+        fail_pregenesis(&[OP_PUSH + 5, 129, 0, 0, 0, 0, OP_CHECKSEQUENCEVERIFY, OP_1]);
         let mut c = MockChecker::sequence_checks(vec![false]);
-        assert!(eval(&vec![OP_0, OP_CHECKSEQUENCEVERIFY, OP_1], &mut c).is_err());
+        assert!(eval(
+            &vec![OP_0, OP_CHECKSEQUENCEVERIFY, OP_1],
+            &mut c,
+            PREGENESIS_RULES
+        )
+        .is_err());
         fail(&[OP_RESERVED, OP_1]);
         fail(&[OP_VER, OP_1]);
         fail(&[OP_VERIF, OP_1]);
@@ -1577,7 +1609,7 @@ mod tests {
             locktime_checks: RefCell::new(vec![true; 32]),
             sequence_checks: RefCell::new(vec![true; 32]),
         };
-        assert!(eval(script, &mut c).is_ok());
+        assert!(eval(script, &mut c, NO_FLAGS).is_ok());
     }
 
     /// A test run that doesn't do signature checks and expects failure
@@ -1587,7 +1619,27 @@ mod tests {
             locktime_checks: RefCell::new(vec![true; 32]),
             sequence_checks: RefCell::new(vec![true; 32]),
         };
-        assert!(eval(script, &mut c).is_err());
+        assert!(eval(script, &mut c, NO_FLAGS).is_err());
+    }
+
+    /// Pre-genesis versions of the above checks
+    fn pass_pregenesis(script: &[u8]) {
+        let mut c = MockChecker {
+            sig_checks: RefCell::new(vec![true; 32]),
+            locktime_checks: RefCell::new(vec![true; 32]),
+            sequence_checks: RefCell::new(vec![true; 32]),
+        };
+        assert!(eval(script, &mut c, PREGENESIS_RULES).is_ok());
+    }
+
+    /// A test run that doesn't do signature checks and expects failure
+    fn fail_pregenesis(script: &[u8]) {
+        let mut c = MockChecker {
+            sig_checks: RefCell::new(vec![true; 32]),
+            locktime_checks: RefCell::new(vec![true; 32]),
+            sequence_checks: RefCell::new(vec![true; 32]),
+        };
+        assert!(eval(script, &mut c, PREGENESIS_RULES).is_err());
     }
 
     /// Mocks a transaction checker to always return a set of values
