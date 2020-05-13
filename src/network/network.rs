@@ -9,6 +9,7 @@ use hex;
 pub enum Network {
     Mainnet = 0,
     Testnet = 1,
+    STN = 2,
 }
 
 impl Network {
@@ -17,6 +18,7 @@ impl Network {
         match x {
             x if x == Network::Mainnet as u8 => Ok(Network::Mainnet),
             x if x == Network::Testnet as u8 => Ok(Network::Testnet),
+            x if x == Network::STN as u8 => Ok(Network::STN),
             _ => {
                 let msg = format!("Unknown network type: {}", x);
                 Err(Error::BadArgument(msg))
@@ -29,6 +31,7 @@ impl Network {
         match self {
             Network::Mainnet => 8333,
             Network::Testnet => 18333,
+            Network::STN => 9333,
         }
     }
 
@@ -37,6 +40,7 @@ impl Network {
         match self {
             Network::Mainnet => [0xe3, 0xe1, 0xf3, 0xe8],
             Network::Testnet => [0xf4, 0xe5, 0xf3, 0xf4],
+            Network::STN => [0xfb, 0xce, 0xc4, 0xf9],
         }
     }
 
@@ -78,7 +82,7 @@ impl Network {
                     txns: vec![tx],
                 }
             }
-            Network::Testnet => {
+            Network::Testnet | Network::STN => {
                 let header = BlockHeader {
                     version: 1,
                     prev_hash: Hash256([0; 32]),
@@ -123,7 +127,7 @@ impl Network {
                 Hash256::decode("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f")
                     .unwrap()
             }
-            Network::Testnet => {
+            Network::Testnet | Network::STN => {
                 Hash256::decode("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943")
                     .unwrap()
             }
@@ -135,6 +139,7 @@ impl Network {
         match self {
             Network::Mainnet => 0x00,
             Network::Testnet => 0x6f,
+            Network::STN => 0x6f,
         }
     }
 
@@ -143,6 +148,7 @@ impl Network {
         match self {
             Network::Mainnet => 0x05,
             Network::Testnet => 0xc4,
+            Network::STN => 0xc4,
         }
     }
 
@@ -158,6 +164,9 @@ impl Network {
                 "testnet-seed.bitcoinsv.io".to_string(),
                 "testnet-seed.cascharia.com".to_string(),
                 "testnet-seed.bitcoincloud.net".to_string(),
+            ],
+            Network::STN => vec![
+                "stn-seed.bitcoinsv.io".to_string(),
             ],
         }
     }

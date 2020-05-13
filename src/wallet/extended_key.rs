@@ -65,7 +65,7 @@ impl ExtendedKey {
                 Network::Mainnet => c
                     .write_u32::<BigEndian>(MAINNET_PUBLIC_EXTENDED_KEY)
                     .unwrap(),
-                Network::Testnet => c
+                Network::Testnet | Network::STN => c
                     .write_u32::<BigEndian>(TESTNET_PUBLIC_EXTENDED_KEY)
                     .unwrap(),
             }
@@ -103,7 +103,7 @@ impl ExtendedKey {
                 Network::Mainnet => c
                     .write_u32::<BigEndian>(MAINNET_PRIVATE_EXTENDED_KEY)
                     .unwrap(),
-                Network::Testnet => c
+                Network::Testnet | Network::STN => c
                     .write_u32::<BigEndian>(TESTNET_PRIVATE_EXTENDED_KEY)
                     .unwrap(),
             }
