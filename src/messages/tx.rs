@@ -5,6 +5,7 @@ use crate::transaction::sighash::SigHashCache;
 use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use linked_hash_map::LinkedHashMap;
+use std::collections::HashSet;
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
@@ -37,7 +38,9 @@ impl Tx {
     pub fn validate(
         &self,
         require_sighash_forkid: bool,
+        _use_genesis_rules: bool,
         utxos: &LinkedHashMap<OutPoint, TxOut>,
+        _pregenesis_outputs: &HashSet<OutPoint>,
     ) -> Result<()> {
         // Make sure neither in or out lists are empty
         if self.inputs.len() == 0 {
@@ -319,64 +322,90 @@ mod tests {
             ],
             lock_time: 0,
         };
-        assert!(tx.validate(false, &utxos).is_ok());
+        assert!(tx.validate(true, true, &utxos, &HashSet::new()).is_ok());
 
         let mut tx_test = tx.clone();
         tx_test.inputs = vec![];
-        assert!(tx_test.validate(false, &utxos).is_err());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_err());
 
         let mut tx_test = tx.clone();
         tx_test.outputs = vec![];
-        assert!(tx_test.validate(false, &utxos).is_err());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_err());
 
         let mut tx_test = tx.clone();
         tx_test.outputs[0].amount = -1;
-        assert!(tx_test.validate(false, &utxos).is_err());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_err());
 
         let mut tx_test = tx.clone();
         tx_test.outputs[0].amount = 0;
         tx_test.outputs[0].amount = 0;
-        assert!(tx_test.validate(false, &utxos).is_ok());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_ok());
 
         let mut tx_test = tx.clone();
         tx_test.outputs[0].amount = MAX_SATOSHIS;
         tx_test.outputs[1].amount = MAX_SATOSHIS;
-        assert!(tx_test.validate(false, &utxos).is_err());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_err());
 
         let mut tx_test = tx.clone();
         tx_test.outputs[1].amount = MAX_SATOSHIS + 1;
-        assert!(tx_test.validate(false, &utxos).is_err());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_err());
 
         let mut tx_test = tx.clone();
         tx_test.inputs[0].prev_output.hash = COINBASE_OUTPOINT_HASH;
         tx_test.inputs[0].prev_output.index = COINBASE_OUTPOINT_INDEX;
-        assert!(tx_test.validate(false, &utxos).is_err());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_err());
 
         let mut tx_test = tx.clone();
         tx_test.lock_time = 4294967295;
-        assert!(tx_test.validate(false, &utxos).is_err());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_err());
 
         let mut tx_test = tx.clone();
         tx_test.inputs[0].prev_output.hash = Hash256([8; 32]);
-        assert!(tx_test.validate(false, &utxos).is_err());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_err());
 
         let mut utxos_clone = utxos.clone();
         let prev_output = &tx.inputs[0].prev_output;
         utxos_clone.get_mut(prev_output).unwrap().amount = -1;
-        assert!(tx.validate(false, &utxos_clone).is_err());
+        assert!(tx
+            .validate(true, true, &utxos_clone, &HashSet::new())
+            .is_err());
 
         let mut utxos_clone = utxos.clone();
         let prev_output = &tx.inputs[0].prev_output;
         utxos_clone.get_mut(prev_output).unwrap().amount = MAX_SATOSHIS + 1;
-        assert!(tx.validate(false, &utxos_clone).is_err());
+        assert!(tx
+            .validate(true, true, &utxos_clone, &HashSet::new())
+            .is_err());
 
         let mut tx_test = tx.clone();
         tx_test.outputs[0].amount = 100;
-        assert!(tx_test.validate(false, &utxos).is_err());
+        assert!(tx_test
+            .validate(true, true, &utxos, &HashSet::new())
+            .is_err());
 
         let mut utxos_clone = utxos.clone();
         let prev_output = &tx.inputs[0].prev_output;
         utxos_clone.get_mut(prev_output).unwrap().pk_script = Script(vec![op_codes::OP_0]);
-        assert!(tx.validate(false, &utxos_clone).is_err());
+        assert!(tx
+            .validate(true, true, &utxos_clone, &HashSet::new())
+            .is_err());
     }
 }

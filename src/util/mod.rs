@@ -38,3 +38,9 @@ pub const BITCOIN_CASH_FORK_HEIGHT_MAINNET: i32 = 478558;
 
 /// Block height that BCH and BTC forked on testnet
 pub const BITCOIN_CASH_FORK_HEIGHT_TESTNET: i32 = 1155875;
+
+/// Block height that activated the genesis upgrade on mainnet
+pub const GENESIS_UPGRADE_HEIGHT_MAINNET: i32 = 620538;
+
+/// Block height that activated the genesis upgrade on testnet
+pub const GENESIS_UPGRADE_HEIGHT_TESTNET: i32 = 1344302;

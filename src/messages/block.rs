@@ -2,7 +2,8 @@ use crate::messages::{BlockHeader, OutPoint, Payload, Tx, TxOut};
 use crate::network::Network;
 use crate::util::{
     sha256d, var_int, Error, Hash256, Result, Serializable, BITCOIN_CASH_FORK_HEIGHT_MAINNET,
-    BITCOIN_CASH_FORK_HEIGHT_TESTNET,
+    BITCOIN_CASH_FORK_HEIGHT_TESTNET, GENESIS_UPGRADE_HEIGHT_MAINNET,
+    GENESIS_UPGRADE_HEIGHT_TESTNET,
 };
 use linked_hash_map::LinkedHashMap;
 use std::collections::{HashSet, VecDeque};
@@ -56,8 +57,9 @@ impl Block {
     pub fn validate(
         &self,
         height: i32,
-        utxos: &LinkedHashMap<OutPoint, TxOut>,
         network: Network,
+        utxos: &LinkedHashMap<OutPoint, TxOut>,
+        pregenesis_outputs: &HashSet<OutPoint>,
     ) -> Result<()> {
         if self.txns.len() == 0 {
             return Err(Error::BadData("Txn count is zero".to_string()));
@@ -73,9 +75,19 @@ impl Block {
             Network::Testnet => height >= BITCOIN_CASH_FORK_HEIGHT_TESTNET,
             Network::STN => true,
         };
+        let use_genesis_rules = match network {
+            Network::Mainnet => height >= GENESIS_UPGRADE_HEIGHT_MAINNET,
+            Network::Testnet => height >= GENESIS_UPGRADE_HEIGHT_TESTNET,
+            Network::STN => true,
+        };
         for txn in self.txns.iter() {
             if !txn.coinbase() {
-                txn.validate(require_sighash_forkid, utxos)?;
+                txn.validate(
+                    require_sighash_forkid,
+                    use_genesis_rules,
+                    utxos,
+                    pregenesis_outputs,
+                )?;
             } else if has_coinbase {
                 return Err(Error::BadData("Multiple coinbases".to_string()));
             } else {
