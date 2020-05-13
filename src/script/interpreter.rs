@@ -7,6 +7,8 @@ use crate::script::Checker;
 use crate::transaction::sighash::SIGHASH_FORKID;
 use crate::util::{hash160, lshift, rshift, sha256d, Error, Result};
 use digest::{FixedOutput, Input};
+use num_bigint::BigInt;
+use num_traits::Zero;
 use ring::digest::{digest, SHA1, SHA256};
 use ripemd160::{Digest, Ripemd160};
 
@@ -412,36 +414,36 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 stack.push(encode_bigint(sum));
             }
             OP_SUB => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 let difference = b - a;
-                stack.push(encode_num_overflow(difference)?);
+                stack.push(encode_bigint(difference));
             }
             OP_MUL => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 let product = a * b;
-                stack.push(encode_num(product)?);
+                stack.push(encode_bigint(product));
             }
             OP_DIV => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
-                if b == 0 {
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
+                if b == BigInt::zero() {
                     let msg = "OP_DIV failed, divide by 0".to_string();
                     return Err(Error::ScriptError(msg));
                 }
                 let quotient = a / b;
-                stack.push(encode_num(quotient)?);
+                stack.push(encode_bigint(quotient));
             }
             OP_MOD => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
-                if b == 0 {
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
+                if b == BigInt::zero() {
                     let msg = "OP_MOD failed, divide by 0".to_string();
                     return Err(Error::ScriptError(msg));
                 }
                 let remainder = a % b;
-                stack.push(encode_num(remainder)?);
+                stack.push(encode_bigint(remainder));
             }
             OP_BOOLAND => {
                 let b = pop_num(&mut stack)? as i64;
@@ -1028,6 +1030,19 @@ mod tests {
         pass(&v);
         pass(&[OP_1, OP_1, OP_MUL, OP_1, OP_EQUAL]);
         pass(&[OP_2, OP_3, OP_MUL, OP_6, OP_EQUAL]);
+        pass(&[
+            OP_PUSH + 4,
+            0xFF,
+            0xFF,
+            0xFF,
+            0x7F,
+            OP_PUSH + 4,
+            0xFF,
+            0xFF,
+            0xFF,
+            0x7F,
+            OP_MUL,
+        ]);
         pass(&[OP_1, OP_1NEGATE, OP_MUL, OP_1NEGATE, OP_EQUAL]);
         pass(&[OP_1, OP_1, OP_DIV, OP_1, OP_EQUAL]);
         pass(&[OP_5, OP_2, OP_DIV, OP_2, OP_EQUAL]);
@@ -1283,19 +1298,6 @@ mod tests {
         fail(&[OP_MUL]);
         fail(&[OP_1, OP_MUL]);
         fail(&[OP_PUSH + 5, 0, 0, 0, 0, 0, OP_MUL]);
-        fail(&[
-            OP_PUSH + 4,
-            0xFF,
-            0xFF,
-            0xFF,
-            0x7F,
-            OP_PUSH + 4,
-            0xFF,
-            0xFF,
-            0xFF,
-            0x7F,
-            OP_MUL,
-        ]);
         fail(&[OP_PUSH + 2, 0, 0, OP_PUSH + 2, 0, 0, OP_MUL]);
         fail(&[OP_DIV]);
         fail(&[OP_1, OP_DIV]);
