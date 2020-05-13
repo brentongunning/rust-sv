@@ -27,7 +27,7 @@
 //! ```rust
 //! use sv::messages::{OutPoint, Tx, TxIn, TxOut};
 //! use sv::transaction::p2pkh::{create_pk_script, create_sig_script};
-//! use sv::util::{hash160, Amount, Hash256, Units};
+//! use sv::util::{hash160, Amount, Hash256};
 //!
 //! // Use real values here
 //! let signature = [0; 72];
@@ -44,7 +44,7 @@
 //! }];
 //!
 //! let outputs = vec![TxOut {
-//!     amount: Amount::from(1., Units::Bsv),
+//!     amount: Amount(1000),
 //!     pk_script: create_pk_script(&hash160(&public_key)),
 //! }];
 //!
