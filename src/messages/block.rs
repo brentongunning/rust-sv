@@ -1,13 +1,14 @@
 use crate::messages::{BlockHeader, OutPoint, Payload, Tx, TxOut};
-use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
+use crate::network::Network;
+use crate::util::{
+    sha256d, var_int, Error, Hash256, Result, Serializable, BITCOIN_CASH_FORK_HEIGHT_MAINNET,
+    BITCOIN_CASH_FORK_HEIGHT_TESTNET,
+};
 use linked_hash_map::LinkedHashMap;
 use std::collections::{HashSet, VecDeque};
 use std::fmt;
 use std::io;
 use std::io::{Read, Write};
-
-/// Block height that BCH and BTC forked on mainnet
-pub const BITCOIN_CASH_FORK_HEIGHT: i32 = 478558;
 
 /// Block of transactions
 #[derive(Default, PartialEq, Eq, Hash, Clone)]
@@ -52,7 +53,12 @@ impl Block {
     }
 
     /// Checks that the block is valid
-    pub fn validate(&self, height: i32, utxos: &LinkedHashMap<OutPoint, TxOut>) -> Result<()> {
+    pub fn validate(
+        &self,
+        height: i32,
+        utxos: &LinkedHashMap<OutPoint, TxOut>,
+        network: Network,
+    ) -> Result<()> {
         if self.txns.len() == 0 {
             return Err(Error::BadData("Txn count is zero".to_string()));
         }
@@ -62,7 +68,11 @@ impl Block {
         }
 
         let mut has_coinbase = false;
-        let require_sighash_forkid = height >= BITCOIN_CASH_FORK_HEIGHT;
+        let require_sighash_forkid = match network {
+            Network::Mainnet => height >= BITCOIN_CASH_FORK_HEIGHT_MAINNET,
+            Network::Testnet => height >= BITCOIN_CASH_FORK_HEIGHT_TESTNET,
+            Network::STN => true,
+        };
         for txn in self.txns.iter() {
             if !txn.coinbase() {
                 txn.validate(require_sighash_forkid, utxos)?;

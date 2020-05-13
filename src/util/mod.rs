@@ -32,3 +32,9 @@ pub use self::serdes::Serializable;
 pub fn secs_since(time: SystemTime) -> u32 {
     SystemTime::now().duration_since(time).unwrap().as_secs() as u32
 }
+
+/// Block height that BCH and BTC forked on mainnet
+pub const BITCOIN_CASH_FORK_HEIGHT_MAINNET: i32 = 478558;
+
+/// Block height that BCH and BTC forked on testnet
+pub const BITCOIN_CASH_FORK_HEIGHT_TESTNET: i32 = 1155875;
