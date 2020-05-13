@@ -31,18 +31,6 @@ pub use self::checker::{Checker, TransactionChecker, TransactionlessChecker};
 pub(crate) use self::interpreter::next_op;
 pub use self::interpreter::{NO_FLAGS, PREGENESIS_RULES};
 
-/// Maximum number of bytes pushable to the stack
-pub const MAX_SCRIPT_ELEMENT_SIZE: usize = 520;
-
-/// Maximum number of multisig keys
-pub const MAX_PUBKEYS_PER_MULTISIG: usize = 20;
-
-/// Maximum number of non-push operations per script
-pub const MAX_OPS_PER_SCRIPT: usize = 500;
-
-/// Maximum script length in bytes
-pub const MAX_SCRIPT_SIZE: usize = 10000;
-
 /// Transaction script
 #[derive(Default, Clone, PartialEq, Eq, Hash)]
 pub struct Script(pub Vec<u8>);

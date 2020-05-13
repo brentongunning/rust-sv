@@ -2,9 +2,7 @@ use crate::script::op_codes::*;
 use crate::script::stack::{
     decode_bool, decode_num, encode_num, encode_num_overflow, pop_bool, pop_num,
 };
-use crate::script::{
-    Checker, MAX_OPS_PER_SCRIPT, MAX_PUBKEYS_PER_MULTISIG, MAX_SCRIPT_ELEMENT_SIZE, MAX_SCRIPT_SIZE,
-};
+use crate::script::Checker;
 use crate::transaction::sighash::SIGHASH_FORKID;
 use crate::util::{hash160, lshift, rshift, sha256d, Error, Result};
 use digest::{FixedOutput, Input};
@@ -29,24 +27,12 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
     let mut branch_exec: Vec<bool> = Vec::new();
     let mut check_index = 0;
     let mut i = 0;
-    let mut n_ops = 0;
-
-    if script.len() > MAX_SCRIPT_SIZE {
-        return Err(Error::ScriptError("Script too long".to_string()));
-    }
 
     'outer: while i < script.len() {
         if branch_exec.len() > 0 && !branch_exec[branch_exec.len() - 1] {
-            i = skip_branch(script, i, &mut n_ops);
+            i = skip_branch(script, i);
             if i >= script.len() {
                 break;
-            }
-        }
-
-        if script[i] > OP_16 {
-            n_ops += 1;
-            if n_ops > MAX_OPS_PER_SCRIPT {
-                return Err(Error::ScriptError("Too many operations".to_string()));
             }
         }
 
@@ -82,10 +68,6 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
             OP_PUSHDATA2 => {
                 remains(i + 1, 2, script)?;
                 let len = ((script[i + 1] as usize) << 0) + ((script[i + 2] as usize) << 8);
-                if len > MAX_SCRIPT_ELEMENT_SIZE {
-                    let msg = "OP_PUSHDATA2 failed, len > MAX_SCRIPT_ELEMENT_SIZE".to_string();
-                    return Err(Error::ScriptError(msg));
-                }
                 remains(i + 3, len, script)?;
                 stack.push(script[i + 3..i + 3 + len].to_vec());
             }
@@ -95,10 +77,6 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                     + ((script[i + 2] as usize) << 8)
                     + ((script[i + 3] as usize) << 16)
                     + ((script[i + 4] as usize) << 24);
-                if len > MAX_SCRIPT_ELEMENT_SIZE {
-                    let msg = "OP_PUSHDATA4 failed, len > MAX_SCRIPT_ELEMENT_SIZE".to_string();
-                    return Err(Error::ScriptError(msg));
-                }
                 remains(i + 5, len, script)?;
                 stack.push(script[i + 5..i + 5 + len].to_vec());
             }
@@ -261,10 +239,6 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 let top = stack.pop().unwrap();
                 let mut second = stack.pop().unwrap();
                 second.extend_from_slice(&top);
-                if second.len() > MAX_SCRIPT_ELEMENT_SIZE {
-                    let msg = "OP_CAT failed, len > MAX_SCRIPT_ELEMENT_SIZE".to_string();
-                    return Err(Error::ScriptError(msg));
-                }
                 stack.push(second);
             }
             OP_SPLIT => {
@@ -584,10 +558,6 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                     let msg = format!("OP_NUM2BIN failed. m too small: {}", m);
                     return Err(Error::ScriptError(msg));
                 }
-                if m > MAX_SCRIPT_ELEMENT_SIZE as i32 {
-                    let msg = format!("OP_NUM2BIN failed. m too large: {}", m);
-                    return Err(Error::ScriptError(msg));
-                }
                 let nlen = n.len();
                 if m < nlen as i32 {
                     let msg = "OP_NUM2BIN failed. n longer than m".to_string();
@@ -677,13 +647,13 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 }
             }
             OP_CHECKMULTISIG => {
-                match check_multisig(&mut stack, checker, &script[check_index..], &mut n_ops)? {
+                match check_multisig(&mut stack, checker, &script[check_index..])? {
                     true => stack.push(encode_num(1)?),
                     false => stack.push(encode_num(0)?),
                 }
             }
             OP_CHECKMULTISIGVERIFY => {
-                if !check_multisig(&mut stack, checker, &script[check_index..], &mut n_ops)? {
+                if !check_multisig(&mut stack, checker, &script[check_index..])? {
                     let msg = "OP_CHECKMULTISIGVERIFY failed".to_string();
                     return Err(Error::ScriptError(msg));
                 }
@@ -739,23 +709,16 @@ fn check_multisig<T: Checker>(
     stack: &mut Vec<Vec<u8>>,
     checker: &mut T,
     script: &[u8],
-    n_ops: &mut usize,
 ) -> Result<bool> {
     // Pop the keys
     let total = pop_num(stack)?;
-    if total < 0 || total > MAX_PUBKEYS_PER_MULTISIG as i32 {
+    if total < 0 {
         return Err(Error::ScriptError("total out of range".to_string()));
     }
     check_stack_size(total as usize, &stack)?;
     let mut keys = Vec::with_capacity(total as usize);
     for _i in 0..total {
         keys.push(stack.pop().unwrap());
-    }
-
-    // Multisig does up to n_keys checksigs so it's equivalent to n_keys more operations
-    *n_ops += keys.len();
-    if *n_ops > MAX_OPS_PER_SCRIPT {
-        return Err(Error::ScriptError("Too many operations".to_string()));
     }
 
     // Pop the sigs
@@ -874,12 +837,9 @@ pub fn next_op(i: usize, script: &[u8]) -> usize {
 }
 
 /// Skips over a branch of if/else and return the index of the next else or endif opcode
-fn skip_branch(script: &[u8], mut i: usize, n_ops: &mut usize) -> usize {
+fn skip_branch(script: &[u8], mut i: usize) -> usize {
     let mut sub = 0;
     while i < script.len() {
-        if script[i] > OP_16 {
-            *n_ops += 1;
-        }
         match script[i] {
             OP_IF => sub += 1,
             OP_NOTIF => sub += 1,
@@ -1110,7 +1070,7 @@ mod tests {
         let mut v = Vec::new();
         v.push(OP_1);
         v.push(OP_PUSH + 2);
-        v.extend_from_slice(&encode_num(MAX_SCRIPT_ELEMENT_SIZE as i64).unwrap());
+        v.extend_from_slice(&encode_num(520).unwrap());
         v.push(OP_NUM2BIN);
         pass(&v);
         pass(&[OP_1, OP_RIPEMD160]);
@@ -1182,43 +1142,10 @@ mod tests {
         pass(&[OP_NOP8, OP_1]);
         pass(&[OP_NOP9, OP_1]);
         pass(&[OP_NOP10, OP_1]);
-        let mut v = vec![OP_DEPTH; MAX_OPS_PER_SCRIPT];
+        let mut v = vec![OP_DEPTH; 501];
         v.push(OP_1);
         pass(&v);
-        pass(&vec![OP_1; MAX_SCRIPT_SIZE]);
-
-        // MAX_SCRIPT_ELEMENT_SIZE checks
-
-        let mut v = Vec::new();
-        v.push(OP_PUSHDATA2);
-        v.extend_from_slice(&encode_num(MAX_SCRIPT_ELEMENT_SIZE as i64).unwrap());
-        v.extend_from_slice(&vec![0; MAX_SCRIPT_ELEMENT_SIZE]);
-        v.push(OP_1);
-        pass(&v);
-
-        let mut v = Vec::new();
-        v.push(OP_PUSHDATA4);
-        v.extend_from_slice(&encode_num(MAX_SCRIPT_ELEMENT_SIZE as i64).unwrap());
-        v.extend_from_slice(&vec![0, 0]);
-        v.extend_from_slice(&vec![0; MAX_SCRIPT_ELEMENT_SIZE]);
-        v.push(OP_1);
-        pass(&v);
-
-        let mut v = Vec::new();
-        v.push(OP_PUSHDATA2);
-        v.extend_from_slice(&encode_num((MAX_SCRIPT_ELEMENT_SIZE - 1) as i64).unwrap());
-        v.extend_from_slice(&vec![0; MAX_SCRIPT_ELEMENT_SIZE - 1]);
-        v.push(OP_1);
-        v.push(OP_CAT);
-        pass(&v);
-
-        let mut v = Vec::new();
-        v.push(OP_0);
-        v.push(OP_PUSHDATA2);
-        v.extend_from_slice(&encode_num(MAX_SCRIPT_ELEMENT_SIZE as i64).unwrap());
-        v.extend_from_slice(&vec![1; MAX_SCRIPT_ELEMENT_SIZE]);
-        v.push(OP_CAT);
-        pass(&v);
+        pass(&vec![OP_1; 10001]);
     }
 
     #[test]
@@ -1496,46 +1423,6 @@ mod tests {
         fail(&[OP_PUBKEYHASH, OP_1]);
         fail(&[OP_PUBKEY, OP_1]);
         fail(&[OP_INVALIDOPCODE, OP_1]);
-        let mut v = vec![OP_DEPTH; MAX_OPS_PER_SCRIPT + 1];
-        v.push(OP_1);
-        fail(&v);
-        let mut v = vec![OP_DEPTH; MAX_OPS_PER_SCRIPT - 3];
-        v.extend_from_slice(&[OP_0, OP_0, OP_9, OP_9, OP_9, OP_3, OP_CHECKMULTISIG]);
-        v.push(OP_1);
-        fail(&v);
-        fail(&vec![OP_1; MAX_SCRIPT_SIZE + 1]);
-
-        // MAX_SCRIPT_ELEMENT_SIZE checks
-
-        let mut v = Vec::new();
-        v.push(OP_PUSHDATA2);
-        v.extend_from_slice(&encode_num((MAX_SCRIPT_ELEMENT_SIZE + 1) as i64).unwrap());
-        v.extend_from_slice(&vec![0; MAX_SCRIPT_ELEMENT_SIZE + 1]);
-        v.push(OP_1);
-        fail(&v);
-
-        let mut v = Vec::new();
-        v.push(OP_PUSHDATA4);
-        v.extend_from_slice(&encode_num((MAX_SCRIPT_ELEMENT_SIZE + 1) as i64).unwrap());
-        v.extend_from_slice(&vec![0, 0]);
-        v.extend_from_slice(&vec![0; MAX_SCRIPT_ELEMENT_SIZE + 1]);
-        v.push(OP_1);
-        fail(&v);
-
-        let mut v = Vec::new();
-        v.push(OP_1);
-        v.push(OP_PUSHDATA2);
-        v.extend_from_slice(&encode_num(MAX_SCRIPT_ELEMENT_SIZE as i64).unwrap());
-        v.extend_from_slice(&vec![0; MAX_SCRIPT_ELEMENT_SIZE]);
-        v.push(OP_CAT);
-        fail(&v);
-
-        let mut v = Vec::new();
-        v.push(OP_1);
-        v.push(OP_PUSH + 2);
-        v.extend_from_slice(&encode_num(MAX_SCRIPT_ELEMENT_SIZE as i64 + 1).unwrap());
-        v.push(OP_NUM2BIN);
-        fail(&v);
     }
 
     #[test]
