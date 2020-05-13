@@ -446,26 +446,26 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 stack.push(encode_bigint(remainder));
             }
             OP_BOOLAND => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
-                if a != 0 && b != 0 {
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
+                if a != BigInt::zero() && b != BigInt::zero() {
                     stack.push(encode_num(1)?);
                 } else {
                     stack.push(encode_num(0)?);
                 }
             }
             OP_BOOLOR => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
-                if a != 0 || b != 0 {
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
+                if a != BigInt::zero() || b != BigInt::zero() {
                     stack.push(encode_num(1)?);
                 } else {
                     stack.push(encode_num(0)?);
                 }
             }
             OP_NUMEQUAL => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 if a == b {
                     stack.push(encode_num(1)?);
                 } else {
@@ -473,16 +473,16 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 }
             }
             OP_NUMEQUALVERIFY => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 if a != b {
                     let msg = "Numbers are not equal".to_string();
                     return Err(Error::ScriptError(msg));
                 }
             }
             OP_NUMNOTEQUAL => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 if a != b {
                     stack.push(encode_num(1)?);
                 } else {
