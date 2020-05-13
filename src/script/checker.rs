@@ -1,6 +1,6 @@
 use crate::messages::Tx;
 use crate::transaction::sighash::{sighash, SigHashCache, SIGHASH_FORKID};
-use crate::util::{Amount, Error, Result};
+use crate::util::{Error, Result};
 use secp256k1::{Message, PublicKey, Secp256k1, Signature};
 
 /// Locktimes greater than or equal to this are interpreted as timestamps. Less then, block heights.
@@ -50,8 +50,8 @@ pub struct TransactionChecker<'a> {
     pub sig_hash_cache: &'a mut SigHashCache,
     /// Spending input for the script
     pub input: usize,
-    /// Amount being spent
-    pub amount: Amount,
+    /// Amount of satoshis being spent
+    pub amount: i64,
     /// True if the signature must have SIGHASH_FORKID present, false if not
     pub require_sighash_forkid: bool,
 }
@@ -171,7 +171,7 @@ mod tests {
             version: 1,
             inputs: vec![],
             outputs: vec![TxOut {
-                amount: Amount(10),
+                amount: 10,
                 pk_script,
             }],
             lock_time: 0,
@@ -193,7 +193,7 @@ mod tests {
 
         let mut cache = SigHashCache::new();
         let pk_script = &tx_1.outputs[0].pk_script.0;
-        let sig_hash = sighash(&tx_2, 0, pk_script, Amount(10), sighash_type, &mut cache).unwrap();
+        let sig_hash = sighash(&tx_2, 0, pk_script, 10, sighash_type, &mut cache).unwrap();
         let sig = generate_signature(&private_key, &sig_hash, sighash_type).unwrap();
 
         let mut sig_script = Script::new();
@@ -206,7 +206,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 0,
-            amount: Amount(10),
+            amount: 10,
             require_sighash_forkid: false,
         };
 
@@ -247,7 +247,7 @@ mod tests {
             version: 1,
             inputs: vec![],
             outputs: vec![TxOut {
-                amount: Amount(10),
+                amount: 10,
                 pk_script,
             }],
             lock_time: 0,
@@ -269,7 +269,7 @@ mod tests {
 
         let mut cache = SigHashCache::new();
         let pk_script = &tx_1.outputs[0].pk_script.0;
-        let sig_hash = sighash(&tx_2, 0, pk_script, Amount(10), sighash_type, &mut cache).unwrap();
+        let sig_hash = sighash(&tx_2, 0, pk_script, 10, sighash_type, &mut cache).unwrap();
         let sig1 = generate_signature(&private_key1, &sig_hash, sighash_type).unwrap();
         let sig3 = generate_signature(&private_key3, &sig_hash, sighash_type).unwrap();
 
@@ -284,7 +284,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 0,
-            amount: Amount(10),
+            amount: 10,
             require_sighash_forkid: false,
         };
 
@@ -333,11 +333,11 @@ mod tests {
             inputs: vec![],
             outputs: vec![
                 TxOut {
-                    amount: Amount(10),
+                    amount: 10,
                     pk_script: pk_script1,
                 },
                 TxOut {
-                    amount: Amount(20),
+                    amount: 20,
                     pk_script: pk_script2,
                 },
             ],
@@ -362,7 +362,7 @@ mod tests {
 
         let mut cache = SigHashCache::new();
         let pk_script = &tx_1.outputs[0].pk_script.0;
-        let sig_hash1 = sighash(&tx_2, 0, pk_script, Amount(10), sighash_type, &mut cache).unwrap();
+        let sig_hash1 = sighash(&tx_2, 0, pk_script, 10, sighash_type, &mut cache).unwrap();
         let sig1 = generate_signature(&private_key1, &sig_hash1, sighash_type).unwrap();
 
         let mut sig_script1 = Script::new();
@@ -384,7 +384,7 @@ mod tests {
         let mut cache = SigHashCache::new();
         let pk_script = &tx_1.outputs[1].pk_script.0;
 
-        let sig_hash2 = sighash(&tx_2, 1, pk_script, Amount(20), sighash_type, &mut cache).unwrap();
+        let sig_hash2 = sighash(&tx_2, 1, pk_script, 20, sighash_type, &mut cache).unwrap();
         let sig2 = generate_signature(&private_key2, &sig_hash2, sighash_type).unwrap();
 
         let mut sig_script2 = Script::new();
@@ -397,7 +397,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 0,
-            amount: Amount(10),
+            amount: 10,
             require_sighash_forkid: false,
         };
 
@@ -412,7 +412,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 1,
-            amount: Amount(20),
+            amount: 20,
             require_sighash_forkid: false,
         };
 
@@ -461,11 +461,11 @@ mod tests {
             inputs: vec![],
             outputs: vec![
                 TxOut {
-                    amount: Amount(10),
+                    amount: 10,
                     pk_script: pk_script1.clone(),
                 },
                 TxOut {
-                    amount: Amount(20),
+                    amount: 20,
                     pk_script: pk_script2.clone(),
                 },
             ],
@@ -483,7 +483,7 @@ mod tests {
                 sequence: 0xffffffff,
             }],
             outputs: vec![TxOut {
-                amount: Amount(10),
+                amount: 10,
                 pk_script: pk_script1.clone(),
             }],
             lock_time: 0,
@@ -493,7 +493,7 @@ mod tests {
 
         let mut cache = SigHashCache::new();
         let pk_script = &tx_1.outputs[0].pk_script.0;
-        let sig_hash1 = sighash(&tx_2, 0, pk_script, Amount(10), sighash_type, &mut cache).unwrap();
+        let sig_hash1 = sighash(&tx_2, 0, pk_script, 10, sighash_type, &mut cache).unwrap();
         let sig1 = generate_signature(&private_key1, &sig_hash1, sighash_type).unwrap();
 
         let mut sig_script1 = Script::new();
@@ -512,7 +512,7 @@ mod tests {
             sequence: 0xffffffff,
         });
         tx_2.outputs.push(TxOut {
-            amount: Amount(20),
+            amount: 20,
             pk_script: pk_script2.clone(),
         });
 
@@ -521,7 +521,7 @@ mod tests {
             &tx_2,
             1,
             &tx_1.outputs[1].pk_script.0,
-            Amount(20),
+            20,
             sighash_type,
             &mut cache,
         )
@@ -538,7 +538,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 0,
-            amount: Amount(10),
+            amount: 10,
             require_sighash_forkid: false,
         };
 
@@ -553,7 +553,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 1,
-            amount: Amount(20),
+            amount: 20,
             require_sighash_forkid: false,
         };
 
@@ -589,7 +589,7 @@ mod tests {
                 tx: &tx,
                 sig_hash_cache: &mut cache,
                 input: 0,
-                amount: Amount(0),
+                amount: 0,
                 require_sighash_forkid: false,
             };
             assert!(pk_script.eval(&mut c).is_err());
@@ -601,7 +601,7 @@ mod tests {
                 tx: &tx,
                 sig_hash_cache: &mut cache,
                 input: 0,
-                amount: Amount(0),
+                amount: 0,
                 require_sighash_forkid: false,
             };
             assert!(pk_script.eval(&mut c).is_ok());
@@ -635,7 +635,7 @@ mod tests {
                 tx: &tx,
                 sig_hash_cache: &mut cache,
                 input: 0,
-                amount: Amount(0),
+                amount: 0,
                 require_sighash_forkid: false,
             };
             assert!(pk_script.eval(&mut c).is_err());
@@ -647,7 +647,7 @@ mod tests {
                 tx: &tx,
                 sig_hash_cache: &mut cache,
                 input: 0,
-                amount: Amount(0),
+                amount: 0,
                 require_sighash_forkid: false,
             };
             assert!(pk_script.eval(&mut c).is_ok());

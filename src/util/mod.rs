@@ -2,7 +2,6 @@
 
 use std::time::SystemTime;
 
-mod amount;
 #[allow(dead_code)]
 mod bits;
 mod bloom_filter;
@@ -18,7 +17,6 @@ pub mod rx;
 mod serdes;
 pub(crate) mod var_int;
 
-pub use self::amount::{Amount};
 pub(crate) use self::bits::{lshift, rshift, Bits};
 #[allow(dead_code)]
 pub use self::bloom_filter::{

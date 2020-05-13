@@ -2,7 +2,7 @@
 
 use crate::messages::{OutPoint, Payload, Tx, TxOut};
 use crate::script::{next_op, op_codes, Script};
-use crate::util::{sha256d, var_int, Amount, Error, Hash256, Result, Serializable};
+use crate::util::{sha256d, var_int, Error, Hash256, Result, Serializable};
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::io::Write;
 
@@ -37,7 +37,7 @@ pub fn sighash(
     tx: &Tx,
     n_input: usize,
     script_code: &[u8],
-    amount: Amount,
+    amount: i64,
     sighash_type: u8,
     cache: &mut SigHashCache,
 ) -> Result<Hash256> {
@@ -76,7 +76,7 @@ fn bip143_sighash(
     tx: &Tx,
     n_input: usize,
     script_code: &[u8],
-    amount: Amount,
+    amount: i64,
     sighash_type: u8,
     cache: &mut SigHashCache,
 ) -> Result<Hash256> {
@@ -127,7 +127,7 @@ fn bip143_sighash(
     s.write(&script_code)?;
 
     // 6. Serialize amount
-    s.write_i64::<LittleEndian>(amount.0)?;
+    s.write_i64::<LittleEndian>(amount)?;
 
     // 7. Serialize sequence
     s.write_u32::<LittleEndian>(tx.inputs[n_input].sequence)?;
@@ -232,7 +232,7 @@ fn legacy_sighash(
     for i in 0..tx_out_list.len() {
         if i == n_input && base_type == SIGHASH_SINGLE {
             let empty = TxOut {
-                amount: Amount(-1),
+                amount: -1,
                 pk_script: Script(vec![]),
             };
             empty.write(&mut s)?;
@@ -278,11 +278,11 @@ mod tests {
             }],
             outputs: vec![
                 TxOut {
-                    amount: Amount(100),
+                    amount: 100,
                     pk_script: p2pkh::create_pk_script(&hash160),
                 },
                 TxOut {
-                    amount: Amount(259899900),
+                    amount: 259899900,
                     pk_script: p2pkh::create_pk_script(&hash160),
                 },
             ],
@@ -294,7 +294,7 @@ mod tests {
             &tx,
             0,
             &pk_script,
-            Amount(260000000),
+            260000000,
             sighash_type,
             &mut cache,
         )
@@ -323,7 +323,7 @@ mod tests {
                 sequence: 0xffffffff,
             }],
             outputs: vec![TxOut {
-                amount: Amount(49990000),
+                amount: 49990000,
                 pk_script: Script(
                     hex::decode("76a9147865b0b301119fc3eadc7f3406ff1339908e46d488ac").unwrap(),
                 ),

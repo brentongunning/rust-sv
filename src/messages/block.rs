@@ -160,7 +160,7 @@ mod tests {
     use super::*;
     use crate::messages::{OutPoint, TxIn, TxOut};
     use crate::script::Script;
-    use crate::util::{Amount, Hash256};
+    use crate::util::{Hash256};
     use hex;
     use std::io::Cursor;
 
@@ -196,7 +196,7 @@ mod tests {
                             sequence: 4294967295,
                         }],
                         outputs: vec![TxOut {
-                            amount: Amount(5000000000),
+                            amount: 5000000000,
                             pk_script: Script(vec![
                                 65, 4, 114, 17, 168, 36, 245, 91, 80, 82, 40, 228, 195, 213, 25,
                                 76, 31, 207, 170, 21, 164, 86, 171, 223, 55, 249, 185, 217, 122,
@@ -240,7 +240,7 @@ mod tests {
                     sequence: 42,
                 }],
                 outputs: vec![TxOut {
-                    amount: Amount(23),
+                    amount: 23,
                     pk_script: Script(vec![1, 2, 3, 4, 5]),
                 }],
                 lock_time: 4,

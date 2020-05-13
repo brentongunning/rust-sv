@@ -9,7 +9,7 @@
 //! use sv::transaction::generate_signature;
 //! use sv::transaction::p2pkh::{create_pk_script, create_sig_script};
 //! use sv::transaction::sighash::{sighash, SigHashCache, SIGHASH_FORKID, SIGHASH_NONE};
-//! use sv::util::{hash160, Amount};
+//! use sv::util::{hash160};
 //!
 //! // Use real values here
 //! let mut tx = Tx {
@@ -24,7 +24,7 @@
 //! let pk_script = create_pk_script(&hash160(&public_key));
 //! let mut cache = SigHashCache::new();
 //! let sighash_type = SIGHASH_NONE | SIGHASH_FORKID;
-//! let sighash = sighash(&tx, 0, &pk_script.0, Amount(0), sighash_type, &mut cache).unwrap();
+//! let sighash = sighash(&tx, 0, &pk_script.0, 0, sighash_type, &mut cache).unwrap();
 //! let signature = generate_signature(&private_key, &sighash, sighash_type).unwrap();
 //! tx.inputs[0].sig_script = create_sig_script(&signature, &public_key);
 //! ```

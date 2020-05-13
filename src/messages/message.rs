@@ -478,7 +478,7 @@ mod tests {
     use crate::messages::version::MIN_SUPPORTED_PROTOCOL_VERSION;
     use crate::messages::REJECT_INVALID;
     use crate::script::Script;
-    use crate::util::{secs_since, Amount, BloomFilter, Hash256};
+    use crate::util::{secs_since, BloomFilter, Hash256};
     use std::io::Cursor;
     use std::net::Ipv6Addr;
     use std::time::UNIX_EPOCH;
@@ -531,7 +531,7 @@ mod tests {
                         sequence: 2,
                     }],
                     outputs: vec![TxOut {
-                        amount: Amount(42),
+                        amount: 42,
                         pk_script: Script(vec![9; 21]),
                     }],
                     lock_time: 0x12ff34aa,
@@ -547,7 +547,7 @@ mod tests {
                         sequence: 3,
                     }],
                     outputs: vec![TxOut {
-                        amount: Amount(43),
+                        amount: 43,
                         pk_script: Script(vec![10; 22]),
                     }],
                     lock_time: 0x44550011,
@@ -753,7 +753,7 @@ mod tests {
                 sequence: 2,
             }],
             outputs: vec![TxOut {
-                amount: Amount(42),
+                amount: 42,
                 pk_script: Script(vec![8; 8]),
             }],
             lock_time: 0x12ff34aa,

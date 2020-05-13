@@ -1,7 +1,7 @@
 use crate::messages::{Block, BlockHeader, OutPoint, Tx, TxIn, TxOut};
 use crate::network::SeedIter;
 use crate::script::Script;
-use crate::util::{Amount, Error, Hash256, Result};
+use crate::util::{Error, Hash256, Result};
 use hex;
 
 /// Network type
@@ -67,7 +67,7 @@ impl Network {
                         sequence: 0xffffffff,
                     }],
                     outputs: vec![TxOut {
-                        amount: Amount(5000000000),
+                        amount: 5000000000,
                         pk_script: Script(hex::decode("4104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac").unwrap()),
                     }],
                     lock_time: 0,
@@ -102,7 +102,7 @@ impl Network {
                         sequence: 0xffffffff,
                     }],
                     outputs: vec![TxOut {
-                        amount: Amount(5000000000),
+                        amount: 5000000000,
                         pk_script: Script(hex::decode("4104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac").unwrap()),
                     }],
                     lock_time: 0,
