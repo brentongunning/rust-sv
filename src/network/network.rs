@@ -151,16 +151,13 @@ impl Network {
         match self {
             Network::Mainnet => vec![
                 "seed.bitcoinsv.io".to_string(),
-                "btccash-seeder.bitcoinunlimited.info".to_string(),
-                "seed.bitprim.org".to_string(),
-                "seed.deadalnix.me".to_string(),
-                "seeder.criptolayer.net".to_string(),
+                "seed.cascharia.com".to_string(),
+                "seed.satoshisvision.network".to_string(),
             ],
             Network::Testnet => vec![
                 "testnet-seed.bitcoinsv.io".to_string(),
-                "testnet-seed.bitprim.org".to_string(),
-                "testnet-seed.deadalnix.me".to_string(),
-                "testnet-seeder.criptolayer.net".to_string(),
+                "testnet-seed.cascharia.com".to_string(),
+                "testnet-seed.bitcoincloud.net".to_string(),
             ],
         }
     }
