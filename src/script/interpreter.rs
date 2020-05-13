@@ -526,27 +526,27 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 }
             }
             OP_MIN => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 if a < b {
-                    stack.push(encode_num(a)?);
+                    stack.push(encode_bigint(a));
                 } else {
-                    stack.push(encode_num(b)?);
+                    stack.push(encode_bigint(b));
                 }
             }
             OP_MAX => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 if a > b {
-                    stack.push(encode_num(a)?);
+                    stack.push(encode_bigint(a));
                 } else {
-                    stack.push(encode_num(b)?);
+                    stack.push(encode_bigint(b));
                 }
             }
             OP_WITHIN => {
-                let max = pop_num(&mut stack)? as i64;
-                let min = pop_num(&mut stack)? as i64;
-                let x = pop_num(&mut stack)? as i64;
+                let max = pop_bigint(&mut stack)?;
+                let min = pop_bigint(&mut stack)?;
+                let x = pop_bigint(&mut stack)?;
                 if x >= min && x < max {
                     stack.push(encode_num(1)?);
                 } else {
