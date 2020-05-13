@@ -490,8 +490,8 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 }
             }
             OP_LESSTHAN => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 if a < b {
                     stack.push(encode_num(1)?);
                 } else {
@@ -499,8 +499,8 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 }
             }
             OP_GREATERTHAN => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 if a > b {
                     stack.push(encode_num(1)?);
                 } else {
@@ -508,8 +508,8 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 }
             }
             OP_LESSTHANOREQUAL => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 if a <= b {
                     stack.push(encode_num(1)?);
                 } else {
@@ -517,8 +517,8 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
                 }
             }
             OP_GREATERTHANOREQUAL => {
-                let b = pop_num(&mut stack)? as i64;
-                let a = pop_num(&mut stack)? as i64;
+                let b = pop_bigint(&mut stack)?;
+                let a = pop_bigint(&mut stack)?;
                 if a >= b {
                     stack.push(encode_num(1)?);
                 } else {
