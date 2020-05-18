@@ -44,7 +44,7 @@
 //! }];
 //!
 //! let outputs = vec![TxOut {
-//!     amount: 1000,
+//!     satoshis: 1000,
 //!     lock_script: create_lock_script(&hash160(&public_key)),
 //! }];
 //!

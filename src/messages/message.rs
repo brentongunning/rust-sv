@@ -531,7 +531,7 @@ mod tests {
                         sequence: 2,
                     }],
                     outputs: vec![TxOut {
-                        amount: 42,
+                        satoshis: 42,
                         lock_script: Script(vec![9; 21]),
                     }],
                     lock_time: 0x12ff34aa,
@@ -547,7 +547,7 @@ mod tests {
                         sequence: 3,
                     }],
                     outputs: vec![TxOut {
-                        amount: 43,
+                        satoshis: 43,
                         lock_script: Script(vec![10; 22]),
                     }],
                     lock_time: 0x44550011,
@@ -753,7 +753,7 @@ mod tests {
                 sequence: 2,
             }],
             outputs: vec![TxOut {
-                amount: 42,
+                satoshis: 42,
                 lock_script: Script(vec![8; 8]),
             }],
             lock_time: 0x12ff34aa,

@@ -54,10 +54,10 @@ impl Tx {
         // Each output value, as well as the total, must be in legal money range
         let mut total_out = 0;
         for tx_out in self.outputs.iter() {
-            if tx_out.amount < 0 {
-                return Err(Error::BadData("tx_out amount negative".to_string()));
+            if tx_out.satoshis < 0 {
+                return Err(Error::BadData("tx_out satoshis negative".to_string()));
             }
-            total_out += tx_out.amount;
+            total_out += tx_out.satoshis;
         }
         if total_out > MAX_SATOSHIS {
             return Err(Error::BadData("Total out exceeds max satoshis".to_string()));
@@ -82,10 +82,10 @@ impl Tx {
         for tx_in in self.inputs.iter() {
             let utxo = utxos.get(&tx_in.prev_output);
             if let Some(tx_out) = utxo {
-                if tx_out.amount < 0 {
-                    return Err(Error::BadData("tx_out amount negative".to_string()));
+                if tx_out.satoshis < 0 {
+                    return Err(Error::BadData("tx_out satoshis negative".to_string()));
                 }
-                total_in += tx_out.amount;
+                total_in += tx_out.satoshis;
             } else {
                 return Err(Error::BadData("utxo not found".to_string()));
             }
@@ -114,7 +114,7 @@ impl Tx {
                 tx: self,
                 sig_hash_cache: &mut sighash_cache,
                 input: input,
-                amount: tx_out.amount,
+                satoshis: tx_out.satoshis,
                 require_sighash_forkid,
             };
 
@@ -263,11 +263,11 @@ mod tests {
             ],
             outputs: vec![
                 TxOut {
-                    amount: 99,
+                    satoshis: 99,
                     lock_script: Script(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 99, 98, 97, 96]),
                 },
                 TxOut {
-                    amount: 199,
+                    satoshis: 199,
                     lock_script: Script(vec![56, 78, 90, 90, 78, 56]),
                 },
             ],
@@ -292,7 +292,7 @@ mod tests {
                 sequence: 4294967295,
             }],
             outputs: vec![TxOut {
-                amount: 5000000000,
+                satoshis: 5000000000,
                 lock_script: Script(vec![
                     65, 4, 114, 17, 168, 36, 245, 91, 80, 82, 40, 228, 195, 213, 25, 76, 31, 207,
                     170, 21, 164, 86, 171, 223, 55, 249, 185, 217, 122, 64, 64, 175, 192, 115, 222,
@@ -315,7 +315,7 @@ mod tests {
                 index: 3,
             },
             TxOut {
-                amount: 100,
+                satoshis: 100,
                 lock_script: Script(vec![]),
             },
         );
@@ -331,11 +331,11 @@ mod tests {
             }],
             outputs: vec![
                 TxOut {
-                    amount: 10,
+                    satoshis: 10,
                     lock_script: Script(vec![]),
                 },
                 TxOut {
-                    amount: 20,
+                    satoshis: 20,
                     lock_script: Script(vec![]),
                 },
             ],
@@ -356,27 +356,27 @@ mod tests {
             .is_err());
 
         let mut tx_test = tx.clone();
-        tx_test.outputs[0].amount = -1;
+        tx_test.outputs[0].satoshis = -1;
         assert!(tx_test
             .validate(true, true, &utxos, &HashSet::new())
             .is_err());
 
         let mut tx_test = tx.clone();
-        tx_test.outputs[0].amount = 0;
-        tx_test.outputs[0].amount = 0;
+        tx_test.outputs[0].satoshis = 0;
+        tx_test.outputs[0].satoshis = 0;
         assert!(tx_test
             .validate(true, true, &utxos, &HashSet::new())
             .is_ok());
 
         let mut tx_test = tx.clone();
-        tx_test.outputs[0].amount = MAX_SATOSHIS;
-        tx_test.outputs[1].amount = MAX_SATOSHIS;
+        tx_test.outputs[0].satoshis = MAX_SATOSHIS;
+        tx_test.outputs[1].satoshis = MAX_SATOSHIS;
         assert!(tx_test
             .validate(true, true, &utxos, &HashSet::new())
             .is_err());
 
         let mut tx_test = tx.clone();
-        tx_test.outputs[1].amount = MAX_SATOSHIS + 1;
+        tx_test.outputs[1].satoshis = MAX_SATOSHIS + 1;
         assert!(tx_test
             .validate(true, true, &utxos, &HashSet::new())
             .is_err());
@@ -402,20 +402,20 @@ mod tests {
 
         let mut utxos_clone = utxos.clone();
         let prev_output = &tx.inputs[0].prev_output;
-        utxos_clone.get_mut(prev_output).unwrap().amount = -1;
+        utxos_clone.get_mut(prev_output).unwrap().satoshis = -1;
         assert!(tx
             .validate(true, true, &utxos_clone, &HashSet::new())
             .is_err());
 
         let mut utxos_clone = utxos.clone();
         let prev_output = &tx.inputs[0].prev_output;
-        utxos_clone.get_mut(prev_output).unwrap().amount = MAX_SATOSHIS + 1;
+        utxos_clone.get_mut(prev_output).unwrap().satoshis = MAX_SATOSHIS + 1;
         assert!(tx
             .validate(true, true, &utxos_clone, &HashSet::new())
             .is_err());
 
         let mut tx_test = tx.clone();
-        tx_test.outputs[0].amount = 100;
+        tx_test.outputs[0].satoshis = 100;
         assert!(tx_test
             .validate(true, true, &utxos, &HashSet::new())
             .is_err());

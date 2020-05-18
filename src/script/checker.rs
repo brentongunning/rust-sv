@@ -51,7 +51,7 @@ pub struct TransactionChecker<'a> {
     /// Spending input for the script
     pub input: usize,
     /// Amount of satoshis being spent
-    pub amount: i64,
+    pub satoshis: i64,
     /// True if the signature must have SIGHASH_FORKID present, false if not
     pub require_sighash_forkid: bool,
 }
@@ -69,7 +69,7 @@ impl<'a> Checker for TransactionChecker<'a> {
             self.tx,
             self.input,
             script,
-            self.amount,
+            self.satoshis,
             sighash_type,
             self.sig_hash_cache,
         )?;
@@ -171,7 +171,7 @@ mod tests {
             version: 1,
             inputs: vec![],
             outputs: vec![TxOut {
-                amount: 10,
+                satoshis: 10,
                 lock_script,
             }],
             lock_time: 0,
@@ -206,7 +206,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 0,
-            amount: 10,
+            satoshis: 10,
             require_sighash_forkid: false,
         };
 
@@ -247,7 +247,7 @@ mod tests {
             version: 1,
             inputs: vec![],
             outputs: vec![TxOut {
-                amount: 10,
+                satoshis: 10,
                 lock_script,
             }],
             lock_time: 0,
@@ -284,7 +284,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 0,
-            amount: 10,
+            satoshis: 10,
             require_sighash_forkid: false,
         };
 
@@ -333,11 +333,11 @@ mod tests {
             inputs: vec![],
             outputs: vec![
                 TxOut {
-                    amount: 10,
+                    satoshis: 10,
                     lock_script: lock_script1,
                 },
                 TxOut {
-                    amount: 20,
+                    satoshis: 20,
                     lock_script: lock_script2,
                 },
             ],
@@ -397,7 +397,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 0,
-            amount: 10,
+            satoshis: 10,
             require_sighash_forkid: false,
         };
 
@@ -412,7 +412,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 1,
-            amount: 20,
+            satoshis: 20,
             require_sighash_forkid: false,
         };
 
@@ -461,11 +461,11 @@ mod tests {
             inputs: vec![],
             outputs: vec![
                 TxOut {
-                    amount: 10,
+                    satoshis: 10,
                     lock_script: lock_script1.clone(),
                 },
                 TxOut {
-                    amount: 20,
+                    satoshis: 20,
                     lock_script: lock_script2.clone(),
                 },
             ],
@@ -483,7 +483,7 @@ mod tests {
                 sequence: 0xffffffff,
             }],
             outputs: vec![TxOut {
-                amount: 10,
+                satoshis: 10,
                 lock_script: lock_script1.clone(),
             }],
             lock_time: 0,
@@ -512,7 +512,7 @@ mod tests {
             sequence: 0xffffffff,
         });
         tx_2.outputs.push(TxOut {
-            amount: 20,
+            satoshis: 20,
             lock_script: lock_script2.clone(),
         });
 
@@ -538,7 +538,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 0,
-            amount: 10,
+            satoshis: 10,
             require_sighash_forkid: false,
         };
 
@@ -553,7 +553,7 @@ mod tests {
             tx: &tx_2,
             sig_hash_cache: &mut cache,
             input: 1,
-            amount: 20,
+            satoshis: 20,
             require_sighash_forkid: false,
         };
 
@@ -589,7 +589,7 @@ mod tests {
                 tx: &tx,
                 sig_hash_cache: &mut cache,
                 input: 0,
-                amount: 0,
+                satoshis: 0,
                 require_sighash_forkid: false,
             };
             assert!(lock_script.eval(&mut c, PREGENESIS_RULES).is_err());
@@ -601,7 +601,7 @@ mod tests {
                 tx: &tx,
                 sig_hash_cache: &mut cache,
                 input: 0,
-                amount: 0,
+                satoshis: 0,
                 require_sighash_forkid: false,
             };
             assert!(lock_script.eval(&mut c, PREGENESIS_RULES).is_ok());
@@ -635,7 +635,7 @@ mod tests {
                 tx: &tx,
                 sig_hash_cache: &mut cache,
                 input: 0,
-                amount: 0,
+                satoshis: 0,
                 require_sighash_forkid: false,
             };
             assert!(lock_script.eval(&mut c, PREGENESIS_RULES).is_err());
@@ -647,7 +647,7 @@ mod tests {
                 tx: &tx,
                 sig_hash_cache: &mut cache,
                 input: 0,
-                amount: 0,
+                satoshis: 0,
                 require_sighash_forkid: false,
             };
             assert!(lock_script.eval(&mut c, PREGENESIS_RULES).is_ok());

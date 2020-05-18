@@ -218,7 +218,7 @@ mod tests {
                             sequence: 4294967295,
                         }],
                         outputs: vec![TxOut {
-                            amount: 5000000000,
+                            satoshis: 5000000000,
                             lock_script: Script(vec![
                                 65, 4, 114, 17, 168, 36, 245, 91, 80, 82, 40, 228, 195, 213, 25,
                                 76, 31, 207, 170, 21, 164, 86, 171, 223, 55, 249, 185, 217, 122,
@@ -262,7 +262,7 @@ mod tests {
                     sequence: 42,
                 }],
                 outputs: vec![TxOut {
-                    amount: 23,
+                    satoshis: 23,
                     lock_script: Script(vec![1, 2, 3, 4, 5]),
                 }],
                 lock_time: 4,

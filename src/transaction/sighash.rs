@@ -30,19 +30,19 @@ const FORK_ID: u32 = 0;
 /// * `n_input` - Spending input index
 /// * `script_code` - The lock_script of the output being spent. This may be a subset of the
 /// lock_script if OP_CODESEPARATOR is used.
-/// * `amount` - The satoshi amount in the output being spent
+/// * `satoshis` - The satoshi amount in the output being spent
 /// * `sighash_type` - Sighash flags
 /// * `cache` - Cache to store intermediate values for future sighash calls.
 pub fn sighash(
     tx: &Tx,
     n_input: usize,
     script_code: &[u8],
-    amount: i64,
+    satoshis: i64,
     sighash_type: u8,
     cache: &mut SigHashCache,
 ) -> Result<Hash256> {
     if sighash_type & SIGHASH_FORKID != 0 {
-        bip143_sighash(tx, n_input, script_code, amount, sighash_type, cache)
+        bip143_sighash(tx, n_input, script_code, satoshis, sighash_type, cache)
     } else {
         legacy_sighash(tx, n_input, script_code, sighash_type)
     }
@@ -71,12 +71,12 @@ impl SigHashCache {
 /// Generates a transaction digest for signing using BIP-143
 ///
 /// This is to be used for all tranasctions after the August 2017 fork.
-/// It fixing quadratic hashing and includes the amount spent in the hash.
+/// It fixing quadratic hashing and includes the satoshis spent in the hash.
 fn bip143_sighash(
     tx: &Tx,
     n_input: usize,
     script_code: &[u8],
-    amount: i64,
+    satoshis: i64,
     sighash_type: u8,
     cache: &mut SigHashCache,
 ) -> Result<Hash256> {
@@ -126,8 +126,8 @@ fn bip143_sighash(
     var_int::write(script_code.len() as u64, &mut s)?;
     s.write(&script_code)?;
 
-    // 6. Serialize amount
-    s.write_i64::<LittleEndian>(amount)?;
+    // 6. Serialize satoshis
+    s.write_i64::<LittleEndian>(satoshis)?;
 
     // 7. Serialize sequence
     s.write_u32::<LittleEndian>(tx.inputs[n_input].sequence)?;
@@ -232,7 +232,7 @@ fn legacy_sighash(
     for i in 0..tx_out_list.len() {
         if i == n_input && base_type == SIGHASH_SINGLE {
             let empty = TxOut {
-                amount: -1,
+                satoshis: -1,
                 lock_script: Script(vec![]),
             };
             empty.write(&mut s)?;
@@ -279,11 +279,11 @@ mod tests {
             }],
             outputs: vec![
                 TxOut {
-                    amount: 100,
+                    satoshis: 100,
                     lock_script: p2pkh::create_lock_script(&hash160),
                 },
                 TxOut {
-                    amount: 259899900,
+                    satoshis: 259899900,
                     lock_script: p2pkh::create_lock_script(&hash160),
                 },
             ],
@@ -318,7 +318,7 @@ mod tests {
                 sequence: 0xffffffff,
             }],
             outputs: vec![TxOut {
-                amount: 49990000,
+                satoshis: 49990000,
                 lock_script: Script(
                     hex::decode("76a9147865b0b301119fc3eadc7f3406ff1339908e46d488ac").unwrap(),
                 ),
