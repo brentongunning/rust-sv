@@ -363,7 +363,7 @@ impl Message {
             Message::MerkleBlock(p) => write_with_payload(writer, MERKLEBLOCK, p, magic),
             Message::NotFound(p) => write_with_payload(writer, NOTFOUND, p, magic),
             Message::Inv(p) => write_with_payload(writer, INV, p, magic),
-            Message::Other(s) => Err(io::Error::new(io::ErrorKind::InvalidData, s.as_ref())),
+            Message::Other(s) => Err(io::Error::new(io::ErrorKind::InvalidData, s.as_str())),
             Message::Partial(_) => Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "Cannot write partial message".to_string(),
