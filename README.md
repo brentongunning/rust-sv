@@ -1,6 +1,6 @@
 # Rust-SV
 
-A library to build Bitcoin SV applications in Rust.
+A library to build Bitcoin SV applications and infrastructure in Rust.
 
 [Documentation](https://docs.rs/sv/)
 
@@ -23,14 +23,6 @@ Add ```sv = "0.2"``` to Cargo.toml
 # Known limitations
 
 This library should not be used for consensus code because its validation checks are incomplete.
-
-# Comparison with other Rust libraries
-
-*rust-bitcoin* - rust-sv has no ties to rust-bitcoin. This library can do everything rust-bitcoin can do and more for Bitcoin SV.
-
-*parity-bitcoin* - The parity Bitcoin client is a full node in Rust. Its code is more full-featured and also more complex.
-
-*bitcrust* - The bitcrust project is strong in some areas and lacking in others. The two projects could be used together.
 
 # License
 
