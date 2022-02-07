@@ -5,6 +5,7 @@ use std::fmt;
 use std::io;
 use std::io::{Cursor, Read, Write};
 use std::str;
+use crate::messages;
 
 /// Header that begins all messages
 #[derive(Default, PartialEq, Eq, Hash, Clone)]
@@ -37,7 +38,7 @@ impl MessageHeader {
             let msg = format!("Bad magic: {:?}", self.magic);
             return Err(Error::BadData(msg));
         }
-        if self.payload_size > max_size {
+        if self.command != messages::commands::BLOCK && self.payload_size > max_size {
             let msg = format!("Bad size: {:?}", self.payload_size);
             return Err(Error::BadData(msg));
         }
@@ -149,6 +150,14 @@ mod tests {
         assert!(h.validate(bad_magic, 100).is_err());
         // Bad size
         assert!(h.validate(magic, 50).is_err());
+        // block messages do not have size limitation
+        let h = MessageHeader {
+            magic,
+            command: *b"block\0\0\0\0\0\0\0",
+            payload_size: 88,
+            checksum: [0x12, 0x34, 0x56, 0x78],
+        };
+        assert!(h.validate(magic, 50).is_ok());
     }
 
     #[test]
