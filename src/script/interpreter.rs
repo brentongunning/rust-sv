@@ -8,7 +8,7 @@ use crate::util::{hash160, lshift, rshift, sha256d, Error, Result};
 use digest::{FixedOutput, Input};
 use num_bigint::BigInt;
 use num_traits::{One, ToPrimitive, Zero};
-use ring::digest::{digest, SHA1, SHA256};
+use ring::digest::{digest, SHA1_FOR_LEGACY_USE_ONLY, SHA256};
 use ripemd160::{Digest, Ripemd160};
 
 // Stack capacity defaults, which may exceeded
@@ -603,7 +603,7 @@ pub fn eval<T: Checker>(script: &[u8], checker: &mut T, flags: u32) -> Result<()
             OP_SHA1 => {
                 check_stack_size(1, &stack)?;
                 let v = stack.pop().unwrap();
-                let result = digest(&SHA1, &v);
+                let result = digest(&SHA1_FOR_LEGACY_USE_ONLY, &v);
                 stack.push(result.as_ref().to_vec());
             }
             OP_SHA256 => {
