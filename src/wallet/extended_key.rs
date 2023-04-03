@@ -1,7 +1,7 @@
 use crate::network::Network;
 use crate::util::{hash160, sha256d, Error, Result, Serializable};
 use byteorder::{BigEndian, WriteBytesExt};
-use ring::digest::SHA512;
+//use ring::digest::SHA512;
 use ring::hmac;
 use rust_base58::base58::{FromBase58, ToBase58};
 use secp256k1::{PublicKey, Secp256k1, SecretKey};
@@ -676,7 +676,8 @@ mod tests {
     fn master_private_key(seed: &str) -> ExtendedKey {
         let seed = hex::decode(seed).unwrap();
         let key = "Bitcoin seed".to_string();
-        let key = hmac::SigningKey::new(&SHA512, &key.as_bytes());
+        //let key = hmac::SigningKey::new(&SHA512, &key.as_bytes());
+        let key = hmac::Key::new(hmac::HMAC_SHA512, &key.as_bytes());
         let hmac = hmac::sign(&key, &seed);
         ExtendedKey::new_private_key(
             Network::Mainnet,
