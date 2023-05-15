@@ -1,6 +1,8 @@
 use std::io;
 use std::io::Read;
 
+const MAX_BUFFER_SIZE_USIZE: usize = 2147483647;
+
 /// Wraps a reader so reads become all-or-nothing
 pub struct AtomicReader<'a> {
     buf: Vec<u8>,
@@ -26,7 +28,14 @@ impl<'a> Read for AtomicReader<'a> {
         } else if buf_len > 0 {
             // Copy what we have and try to read the rest
             out[0..buf_len].clone_from_slice(&self.buf[0..]);
-            let size = self.reader.read(&mut out[buf_len..])?;
+            //let size = self.reader.read(&mut out[buf_len..])?;
+            // Check the size of this read
+            let size = if (out_len - buf_len) > MAX_BUFFER_SIZE_USIZE {
+                self.reader
+                    .read(&mut out[buf_len..buf_len + MAX_BUFFER_SIZE_USIZE])?
+            } else {
+                self.reader.read(&mut out[buf_len..])?
+            };
             if size == 0 {
                 Err(io::Error::new(io::ErrorKind::NotConnected, "Disconnected"))
             } else if buf_len + size < out_len {
@@ -39,7 +48,13 @@ impl<'a> Read for AtomicReader<'a> {
                 Ok(out_len)
             }
         } else {
-            let size = self.reader.read(&mut out[0..])?;
+            //let size = self.reader.read(&mut out[0..])?;
+            // Check the size of this read
+            let size = if out_len > MAX_BUFFER_SIZE_USIZE {
+                self.reader.read(&mut out[0..MAX_BUFFER_SIZE_USIZE])?
+            } else {
+                self.reader.read(&mut out[0..])?
+            };
             if size == 0 {
                 Err(io::Error::new(io::ErrorKind::NotConnected, "Disconnected"))
             } else if size < out_len {
